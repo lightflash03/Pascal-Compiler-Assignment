@@ -5,10 +5,15 @@
 %}
 
 %%
+[\s\S]*program { // Match any characters (including newlines) before "program"
+    fprintf(yyout, "%d PROGRAM KEYWORD\n", yylineno);
+}
 
-";" {yylineno++;}
+\n { 
+    yylineno++;
+}
 
-[ \t\n]+                ; // Ignore whitespace
+[ \t]+                ; // Ignore whitespace
 
 "//".*                  ; // Ignore comments
 
@@ -38,10 +43,6 @@
 
 "and"|"or" {
     fprintf(yyout, "%d %s BINARY_BOOL_OPERATOR\n", yylineno, yytext);
-}
-
-"program" {
-    fprintf(yyout, "%d %s KEYWORD\n", yylineno, yytext);
 }
 
 [Ii][Nn][Tt][Ee][Gg][Ee][Rr]|[Rr][Ee][Aa][Ll]|[Bb][Oo][Oo][Ll][Ee][Aa][Nn]|[Cc][Hh][Aa][Rr] {
