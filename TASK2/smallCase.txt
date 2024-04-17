@@ -1,0 +1,17 @@
+#test_case_3 (while normal)
+program reversenumber;
+var
+  number, reversednumber, remainder: integer;
+begin
+  write("enter a number to reverse:");
+  read(number);
+  reversednumber := 0;
+  while number <> 0 do
+  begin
+    remainder := number % 10;
+    reversednumber := reversednumber * 10 + remainder;
+    number := number / 10;
+  end;
+  write("the reversed number is: ");
+  write(reversednumber);
+end.

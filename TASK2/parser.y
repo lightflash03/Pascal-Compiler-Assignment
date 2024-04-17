@@ -1,17 +1,27 @@
 %{
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
-FILE* fptRead = NULL;
+FILE *fptRead = NULL, *fptWrite = NULL;
+extern FILE *yyin;
+extern FILE *yyout;
 %}
 
-%token ASSIGN OPEN_BRACE CLOSED_BRACE ARITHMETIC_OPERATOR RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR PROGRAM DATA_TYPE VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY BEGIN END READ WRITE INTEGER_CONST STRING_CONSTANT REAL_CONST IDENTIFIER PUNCTUATOR
+%token ASSIGN OPEN_BRACE CLOSED_BRACE ARITHMETIC_OPERATOR RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR PROGRAM DATA_TYPE VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY TOKEN_BEGIN END READ WRITE INTEGER_CONST STRING_CONSTANT REAL_CONST IDENTIFIER PUNCTUATOR
 
+%left BINARY_BOOL_OPERATOR
+%left RELATIONAL_OPERATOR
+%left '+' '-'
+%left '*' '/' '%'
+%right UNARY_BOOL_OPERATOR
+
+%start program
 
 %%
 
 program
-    : PROGRAM IDENTIFIER ';' declarations BEGIN statements END '.'
+    : PROGRAM IDENTIFIER ';' declarations TOKEN_BEGIN statements END '.'
     ;
 
 declarations
@@ -22,15 +32,21 @@ declaration_list
     : multiple_lines
     ;
 
+// Doesn't support the case of no declarations
 multiple_lines
-    : multiple_identifiers IDENTIFIER ':' DATA_TYPE ';' multiple_lines
-    | /*empty*/
+    : multiple_identifiers ':' DATA_TYPE ';' multiple_lines
+    | multiple_identifiers ':' DATA_TYPE ';'
     ;
 
 multiple_identifiers
     : IDENTIFIER ',' multiple_identifiers
-    | /*empty*/
+    | IDENTIFIER
     ;
+
+// multiple_identifiers
+//     : IDENTIFIER
+//     | multiple_identifiers ',' IDENTIFIER
+//     ;
 
 statements
     : /* empty */
@@ -59,16 +75,51 @@ loop
     | FOR IDENTIFIER ASSIGN expression TO expression DO statement
     ;
 
-expression
-    : expression ARITHMETIC_OPERATOR expression
-    | expression RELATIONAL_OPERATOR expression
-    | UNARY_BOOL_OPERATOR expression
-    | expression BINARY_BOOL_OPERATOR expression
-    | '(' expression ')'
-    | IDENTIFIER
-    | INTEGER_CONST
-    | REAL_CONST
-    ;
+// expression
+//     : arithmetic_addition
+//     | arithmetic_multiplication
+//     | expression RELATIONAL_OPERATOR expression
+//     | '!' expression
+//     | expression BINARY_BOOL_OPERATOR expression
+//     | '(' expression ')'
+//     | IDENTIFIER
+//     | INTEGER_CONST
+//     | REAL_CONST
+//     ;
+
+// arithmetic_addition
+//     : expression '+' expression
+// 	| expression '-' expression
+//     ;
+
+// arithmetic_multiplication
+//     : expression '*' expression 
+// 	| expression '/' expression 
+// 	| expression '%' expression 
+//     ;
+
+expression: arithmetic_expression
+          | relational_expression
+          | boolean_expression
+          | '(' expression ')'
+          ;
+
+arithmetic_expression: arithmetic_expression '+' arithmetic_expression
+                     | arithmetic_expression '-' arithmetic_expression
+                     | arithmetic_expression '*' arithmetic_expression
+                     | arithmetic_expression '/' arithmetic_expression
+                     | arithmetic_expression '%' arithmetic_expression
+                     | primary_expression;
+
+relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expression;
+
+boolean_expression: arithmetic_expression BINARY_BOOL_OPERATOR arithmetic_expression
+                  | UNARY_BOOL_OPERATOR expression
+                  ;
+
+primary_expression: IDENTIFIER
+                  | INTEGER_CONST
+                  | REAL_CONST;
 
 output
     : output_list
@@ -87,17 +138,23 @@ void yyerror(char *s) {
     fprintf(stderr, "Error: %s\n", s);
 }
 
-void toLower(FILE* fptRead) {
-	int c;
+void toLower(FILE* fptRead, FILE* fptWrite) {
     char ch;
-    while ((ch = fgetc(fptRead))! = EOF) {    
-        fputc(tolower(ch), fptRead);
+    while ((ch = fgetc(fptRead)) != EOF) {    
+        fputc(tolower(ch), fptWrite);
     }
-    return 0;
+    return;
 }
 
 int main() {
 	fptRead = fopen("program.txt","r+");
-	toLower(fptRead);
+    fptWrite = fopen("smallCase.txt", "w");
+	toLower(fptRead, fptWrite);
+    fclose(fptRead);
+    fclose(fptWrite);
+
+    yyin = fopen("smallCase.txt", "r");
+    yyout = fopen("output.txt", "w");
+
     yyparse();
 }

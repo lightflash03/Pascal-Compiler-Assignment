@@ -1,4 +1,5 @@
 %{
+#include <stdio.h>
 #include "y.tab.h"
 %}
 
@@ -29,7 +30,7 @@
 }
 
 "not" {
-    return UNARY_BOOL_OPERATOR
+    return UNARY_BOOL_OPERATOR;
 }
 
 "and"|"or" {
@@ -53,7 +54,7 @@
 }
 
 "downto" {
-    return DOWNTO
+    return DOWNTO;
 }
 
 "if" {
@@ -85,7 +86,7 @@
 }
 
 "begin" {
-    return BEGIN;
+    return TOKEN_BEGIN;
 }
 
 "end" {
@@ -109,7 +110,7 @@
 }
 
 [a-zA-Z][a-zA-Z0-9_]*   {
-    yylval.str = strdup(yytext);
+    // yylval.str = strdup(yytext);
     return IDENTIFIER;
 }
 
@@ -118,7 +119,7 @@
 }
 
 \"([^\"\n]|\\.)*\" { 
-    yylval.str = strdup(yytext);
+    // yylval.str = strdup(yytext);
     return STRING_CONSTANT; 
 }
 
