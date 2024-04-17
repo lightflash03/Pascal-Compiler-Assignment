@@ -2,123 +2,127 @@
 // #include "y.tab.h"
 #include <stdio.h>
 #include <stdlib.h>
+int lineNo=1;
 %}
+
+%s INPROGRAM
 
 %%
 [\s\S]*program { // Match any characters (including newlines) before "program"
-    fprintf(yyout, "%d PROGRAM KEYWORD\n", yylineno);
+    fprintf(yyout, "%d PROGRAM KEYWORD\n", lineNo);
+    BEGIN(INPROGRAM);
 }
 
-\n { 
-    yylineno++;
+<INPROGRAM>\n { 
+    lineNo++;
 }
 
-[ \t]+                ; // Ignore whitespace
+<INPROGRAM>[ \t]+                ; // Ignore whitespace
 
-"//".*                  ; // Ignore comments
+<INPROGRAM>"//".*                  ; // Ignore comments
 
-":=" {
-    fprintf(yyout, "%d %s ASSIGN\n", yylineno, yytext);
+<INPROGRAM>":=" {
+    fprintf(yyout, "%d %s ASSIGN\n", lineNo, yytext);
 }
 
-"(" {
-    fprintf(yyout, "%d %s OPEN_BRACE\n", yylineno, yytext);
+<INPROGRAM>"(" {
+    fprintf(yyout, "%d %s OPEN_BRACE\n", lineNo, yytext);
 }
 
-")" {
-    fprintf(yyout, "%d %s CLOSE_BRACE\n", yylineno, yytext);
+<INPROGRAM>")" {
+    fprintf(yyout, "%d %s CLOSE_BRACE\n", lineNo, yytext);
 }
 
-"+"|"-"|"*"|"/"|"%" {
-    fprintf(yyout, "%d %s ARITHMETIC_OPERATOR\n", yylineno, yytext);
+<INPROGRAM>"+"|"-"|"*"|"/"|"%" {
+    fprintf(yyout, "%d %s ARITHMETIC_OPERATOR\n", lineNo, yytext);
 }
 
-"="|"<"|">"|"<="|">="|"<>" {
-    fprintf(yyout, "%d %s RELATIONAL_OPERATOR\n", yylineno, yytext);
+<INPROGRAM>"="|"<"|">"|"<="|">="|"<>" {
+    fprintf(yyout, "%d %s RELATIONAL_OPERATOR\n", lineNo, yytext);
 }
 
-"not" {
-    fprintf(yyout, "%d %s UNARY_BOOL_OPERATOR\n", yylineno, yytext);
+<INPROGRAM>"not" {
+    fprintf(yyout, "%d %s UNARY_BOOL_OPERATOR\n", lineNo, yytext);
 }
 
-"and"|"or" {
-    fprintf(yyout, "%d %s BINARY_BOOL_OPERATOR\n", yylineno, yytext);
+<INPROGRAM>"and"|"or" {
+    fprintf(yyout, "%d %s BINARY_BOOL_OPERATOR\n", lineNo, yytext);
 }
 
-[Ii][Nn][Tt][Ee][Gg][Ee][Rr]|[Rr][Ee][Aa][Ll]|[Bb][Oo][Oo][Ll][Ee][Aa][Nn]|[Cc][Hh][Aa][Rr] {
-    fprintf(yyout, "%d %s DATA_TYPE\n", yylineno, yytext);
+<INPROGRAM>[Ii][Nn][Tt][Ee][Gg][Ee][Rr]|[Rr][Ee][Aa][Ll]|[Bb][Oo][Oo][Ll][Ee][Aa][Nn]|[Cc][Hh][Aa][Rr] {
+    fprintf(yyout, "%d %s DATA_TYPE\n", lineNo, yytext);
 }
 
-"var" {
-    fprintf(yyout, "%d %s KEYWORD\n", yylineno, yytext);
+<INPROGRAM>"var" {
+    fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
-"to" {
-    fprintf(yyout, "%d %s KEYWORD\n", yylineno, yytext);
+<INPROGRAM>"to" {
+    fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
-"downto" {
+<INPROGRAM>"downto" {
     fprintf(yyout, "DOWNTO\n");
 }
 
-"if" {
-    fprintf(yyout, "%d %s CONDITIONAL\n", yylineno, yytext);
+<INPROGRAM>"if" {
+    fprintf(yyout, "%d %s CONDITIONAL\n", lineNo, yytext);
 }
 
-"then" {
-    fprintf(yyout, "%d %s CONDITIONAL\n", yylineno, yytext);
+<INPROGRAM>"then" {
+    fprintf(yyout, "%d %s CONDITIONAL\n", lineNo, yytext);
 }
 
-"else" {
-    fprintf(yyout, "%d %s CONDITIONAL\n", yylineno, yytext);
+<INPROGRAM>"else" {
+    fprintf(yyout, "%d %s CONDITIONAL\n", lineNo, yytext);
 }
 
-"while" {
-    fprintf(yyout, "%d %s LOOP\n", yylineno, yytext);
+<INPROGRAM>"while" {
+    fprintf(yyout, "%d %s LOOP\n", lineNo, yytext);
 }
 
-"for" {
-    fprintf(yyout, "%d %s LOOP\n", yylineno, yytext);
+<INPROGRAM>"for" {
+    fprintf(yyout, "%d %s LOOP\n", lineNo, yytext);
 }
 
-"do" {
-    fprintf(yyout, "%d %s LOOP\n", yylineno, yytext);
+<INPROGRAM>"do" {
+    fprintf(yyout, "%d %s LOOP\n", lineNo, yytext);
 }
 
 "array" {
     // fprintf(yyout, "ARRAY\n");
 }
 
-"begin" {
-    // fprintf(yyout, "BEGIN\n");
+<INPROGRAM>"begin" {
+    fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
-"end" {
-    // fprintf(yyout, "END\n");
+<INPROGRAM>"end" {
+    fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
-"read" {
-    // fprintf(yyout, "READ\n");
+<INPROGRAM>"read" {
+    fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
-"write" {
-    // fprintf(yyout, "WRITE\n");
+<INPROGRAM>"write" {
+    fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
-[0-9]+ { 
-    // fprintf(yyout, "INTEGER_CONST\n");
+<INPROGRAM>[0-9]+ { 
+    fprintf(yyout, "%d %s INTEGER\n", lineNo, yytext);
 }
 
-[0-9]+"."[0-9]+ { 
-    // fprintf(yyout, "REAL_CONST\n");
+<INPROGRAM>[0-9]+"."[0-9]+ { 
+    fprintf(yyout, "%d %s REALCONSTANT\n", lineNo, yytext);
 }
 
-[a-zA-Z][a-zA-Z0-9_]*   {
-    // fprintf(yyout, "IDENTIFIER\n");
+<INPROGRAM>[a-zA-Z][a-zA-Z0-9_]*   {
+    fprintf(yyout, "%d %s IDENTIFIER\n", lineNo, yytext);
 }
 
-"."|";"|","|":"|"("|")" {
-    // fprintf(yyout, "PUNCTUATOR\n");
+<INPROGRAM>"."|";"|","|":"|"("|")" {
+    fprintf(yyout, "%d %s PUNCTUATOR\n", lineNo, yytext);
 }
 
 \"([^\"\n]|\\.)*\" { 
