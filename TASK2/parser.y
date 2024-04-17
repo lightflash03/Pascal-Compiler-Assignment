@@ -135,7 +135,7 @@ output_list
 %%
 
 void yyerror(char *s) {
-    fprintf(stderr, "Error: %s\n", s);
+    fprintf(yyout, "Error: %s\n", s);
 }
 
 void toLower(FILE* fptRead, FILE* fptWrite) {
