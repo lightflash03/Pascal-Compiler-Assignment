@@ -13,16 +13,24 @@
     return ASSIGN;
 }
 
-"(" {
-    return OPEN_BRACE;
+"+" {
+    return ADD;
 }
 
-")" {
-    return CLOSED_BRACE;
+"-" {
+    return SUBTRACT;
 }
 
-"+"|"-"|"*"|"/"|"%" {
-    return ARITHMETIC_OPERATOR;
+"*" {
+    return MULTIPLY;
+}
+
+"/" {
+    return DIVIDE;
+}
+
+"%" {
+    return MODULO;
 }
 
 "="|"<"|">"|"<="|">="|"<>" {
@@ -38,18 +46,22 @@
 }
 
 "program" {
+    printf("Program\n");
     return PROGRAM;
 }
 
 "integer"|"real"|"boolean"|"char" {
+    printf("data_type\n");
     return DATA_TYPE;
 }
 
 "var" {
+    printf("Var\n");
     return VAR;
 }
 
 "to" {
+    printf("To\n");
     return TO;
 }
 
@@ -86,18 +98,22 @@
 }
 
 "begin" {
+    printf("Begin\n");
     return TOKEN_BEGIN;
 }
 
 "end" {
+    printf("End\n");
     return END;
 }
 
 "read" {
+    printf("Read\n");
     return READ;
 }
 
 "write" {
+    printf("Write\n");
     return WRITE;
 }
 
@@ -111,11 +127,32 @@
 
 [a-zA-Z][a-zA-Z0-9_]*   {
     // yylval.str = strdup(yytext);
+    printf("Identifier\n");
     return IDENTIFIER;
 }
 
-"."|";"|","|":"|"("|")" {
-    return PUNCTUATOR;
+"." {
+    return FULLSTOP;
+}
+
+";" {
+    return SEMICOLON;
+}
+
+"," {
+    return COMMA;
+}
+
+":" {
+    return COLON;
+}
+
+"(" {
+    return OPEN_BRACE;
+}
+
+")" {
+    return CLOSED_BRACE;
 }
 
 \"([^\"\n]|\\.)*\" { 

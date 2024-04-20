@@ -8,12 +8,12 @@ extern FILE *yyin;
 extern FILE *yyout;
 %}
 
-%token ASSIGN OPEN_BRACE CLOSED_BRACE ARITHMETIC_OPERATOR RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR PROGRAM DATA_TYPE VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY TOKEN_BEGIN END READ WRITE INTEGER_CONST STRING_CONSTANT REAL_CONST IDENTIFIER PUNCTUATOR
+%token COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR PROGRAM DATA_TYPE VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY TOKEN_BEGIN END READ WRITE INTEGER_CONST STRING_CONSTANT REAL_CONST IDENTIFIER PUNCTUATOR
 
 %left BINARY_BOOL_OPERATOR
 %left RELATIONAL_OPERATOR
-%left '+' '-'
-%left '*' '/' '%'
+%left ADD SUBTRACT
+%left MULTIPLY DIVIDE MODULO
 %right UNARY_BOOL_OPERATOR
 
 %start program
@@ -21,7 +21,7 @@ extern FILE *yyout;
 %%
 
 program
-    : PROGRAM IDENTIFIER ';' declarations TOKEN_BEGIN statements END '.'
+    : PROGRAM IDENTIFIER SEMICOLON declarations TOKEN_BEGIN statements END FULLSTOP
     ;
 
 declarations
@@ -34,31 +34,31 @@ declaration_list
 
 // Doesn't support the case of no declarations
 multiple_lines
-    : multiple_identifiers ':' DATA_TYPE ';' multiple_lines
-    | multiple_identifiers ':' DATA_TYPE ';'
+    : multiple_identifiers COLON DATA_TYPE SEMICOLON multiple_lines
+    | multiple_identifiers COLON DATA_TYPE SEMICOLON
     ;
 
 multiple_identifiers
-    : IDENTIFIER ',' multiple_identifiers
+    : IDENTIFIER COMMA multiple_identifiers
     | IDENTIFIER
     ;
 
 // multiple_identifiers
 //     : IDENTIFIER
-//     | multiple_identifiers ',' IDENTIFIER
+//     | multiple_identifiers COMMA IDENTIFIER
 //     ;
 
 statements
     : /* empty */
-    | statement ';' statements
+    | statement SEMICOLON statements
     ;
 
 statement
     : assignment
     | conditional
     | loop
-    | READ '(' IDENTIFIER ')'
-    | WRITE '(' output ')'
+    | READ OPEN_BRACE IDENTIFIER CLOSED_BRACE
+    | WRITE OPEN_BRACE output CLOSED_BRACE
     ;
 
 assignment
@@ -71,7 +71,7 @@ conditional
     ;
 
 loop
-    : WHILE expression DO statements
+    : WHILE expression DO TOKEN_BEGIN statements END SEMICOLON
     | FOR IDENTIFIER ASSIGN expression TO expression DO statement
     ;
 
@@ -81,34 +81,34 @@ loop
 //     | expression RELATIONAL_OPERATOR expression
 //     | '!' expression
 //     | expression BINARY_BOOL_OPERATOR expression
-//     | '(' expression ')'
+//     | OPEN_BRACE expression CLOSED_BRACE
 //     | IDENTIFIER
 //     | INTEGER_CONST
 //     | REAL_CONST
 //     ;
 
 // arithmetic_addition
-//     : expression '+' expression
-// 	| expression '-' expression
+//     : expression ADD expression
+// 	| expression SUBTRACT expression
 //     ;
 
 // arithmetic_multiplication
-//     : expression '*' expression 
-// 	| expression '/' expression 
-// 	| expression '%' expression 
+//     : expression MULTIPLY expression 
+// 	| expression DIVIDE expression 
+// 	| expression MODULO expression 
 //     ;
 
 expression: arithmetic_expression
           | relational_expression
           | boolean_expression
-          | '(' expression ')'
+          | OPEN_BRACE expression CLOSED_BRACE
           ;
 
-arithmetic_expression: arithmetic_expression '+' arithmetic_expression
-                     | arithmetic_expression '-' arithmetic_expression
-                     | arithmetic_expression '*' arithmetic_expression
-                     | arithmetic_expression '/' arithmetic_expression
-                     | arithmetic_expression '%' arithmetic_expression
+arithmetic_expression: arithmetic_expression ADD arithmetic_expression
+                     | arithmetic_expression SUBTRACT arithmetic_expression
+                     | arithmetic_expression MULTIPLY arithmetic_expression
+                     | arithmetic_expression DIVIDE arithmetic_expression
+                     | arithmetic_expression MODULO arithmetic_expression
                      | primary_expression;
 
 relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expression;
@@ -128,7 +128,7 @@ output
 
 output_list
     : expression
-    | output_list ',' expression
+    | output_list COMMA expression
     ;
 
 
@@ -136,6 +136,7 @@ output_list
 
 void yyerror(char *s) {
     fprintf(yyout, "Error: %s\n", s);
+    exit(1);
 }
 
 void toLower(FILE* fptRead, FILE* fptWrite) {
@@ -157,4 +158,7 @@ int main() {
     yyout = fopen("output.txt", "w");
 
     yyparse();
+
+    // No error encountered
+    fprintf(yyout, "No error");
 }
