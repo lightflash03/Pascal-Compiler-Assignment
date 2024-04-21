@@ -1,1 +1,1 @@
-No error
+Error: syntax error

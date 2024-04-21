@@ -1,6 +1,14 @@
-program ReverseNumber;
+program FactorialCalculation;
 var
-  number: Integer;
+  number, factorial, i: Integer;
 begin
-  write(number);
+  write("Enter a number to calculate its factorial:");
+  read(number);
+  factorial := 1;
+  for i := number downto 1 do
+  begin
+    factorial := factorial * i;
+  end;
+  write("The factorial is: ");
+  write(factorial);
 end.

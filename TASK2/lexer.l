@@ -3,6 +3,9 @@
 #include "y.tab.h"
 %}
 
+%x START_QUOTE 
+%x ANY_STRING
+
 %%
 
 [ \t\n]+                ; // Ignore whitespace
@@ -66,6 +69,7 @@
 }
 
 "downto" {
+    printf("Down to\n");
     return DOWNTO;
 }
 
@@ -126,7 +130,6 @@
 }
 
 [a-zA-Z][a-zA-Z0-9_]*   {
-    // yylval.str = strdup(yytext);
     printf("Identifier\n");
     return IDENTIFIER;
 }
@@ -148,6 +151,7 @@
 }
 
 "(" {
+    printf("Open Bracket\n");
     return OPEN_BRACE;
 }
 
@@ -155,8 +159,17 @@
     return CLOSED_BRACE;
 }
 
-\"([^\"\n]|\\.)*\" { 
+\" { // Check this 
     // yylval.str = strdup(yytext);
+    BEGIN START_QUOTE;
+}
+
+<START_QUOTE>[^\"]* {
+    BEGIN ANY_STRING;
+}
+
+<ANY_STRING>\" {
+    BEGIN INITIAL;
     return STRING_CONSTANT; 
 }
 

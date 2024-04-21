@@ -66,37 +66,15 @@ assignment
     ;
 
 conditional
-    : IF expression THEN statements
-    | IF expression THEN statements ELSE statements
+    : IF expression THEN TOKEN_BEGIN statements END 
+    | IF expression THEN TOKEN_BEGIN statements END ELSE TOKEN_BEGIN statements END 
     ;
 
 loop
-    : WHILE expression DO TOKEN_BEGIN statements END SEMICOLON
-    | FOR IDENTIFIER ASSIGN expression TO expression DO statement
+    : WHILE expression DO TOKEN_BEGIN statements END 
+    | FOR IDENTIFIER ASSIGN expression DOWNTO expression DO TOKEN_BEGIN statement END
+    | FOR IDENTIFIER ASSIGN expression TO expression DO TOKEN_BEGIN statement END 
     ;
-
-// expression
-//     : arithmetic_addition
-//     | arithmetic_multiplication
-//     | expression RELATIONAL_OPERATOR expression
-//     | '!' expression
-//     | expression BINARY_BOOL_OPERATOR expression
-//     | OPEN_BRACE expression CLOSED_BRACE
-//     | IDENTIFIER
-//     | INTEGER_CONST
-//     | REAL_CONST
-//     ;
-
-// arithmetic_addition
-//     : expression ADD expression
-// 	| expression SUBTRACT expression
-//     ;
-
-// arithmetic_multiplication
-//     : expression MULTIPLY expression 
-// 	| expression DIVIDE expression 
-// 	| expression MODULO expression 
-//     ;
 
 expression: arithmetic_expression
           | relational_expression
@@ -104,11 +82,11 @@ expression: arithmetic_expression
           | OPEN_BRACE expression CLOSED_BRACE
           ;
 
-arithmetic_expression: arithmetic_expression ADD arithmetic_expression
-                     | arithmetic_expression SUBTRACT arithmetic_expression
-                     | arithmetic_expression MULTIPLY arithmetic_expression
-                     | arithmetic_expression DIVIDE arithmetic_expression
-                     | arithmetic_expression MODULO arithmetic_expression
+arithmetic_expression: arithmetic_expression ADD expression
+                     | arithmetic_expression SUBTRACT expression
+                     | arithmetic_expression MULTIPLY expression
+                     | arithmetic_expression DIVIDE expression
+                     | arithmetic_expression MODULO expression
                      | primary_expression;
 
 relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expression;
