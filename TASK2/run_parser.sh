@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Generate y.tab.c from parser.y
-yacc -d parser.y
+yacc -d --warnings=none parser.y
 
 # Generate lex.yy.c from lexer.l
 flex lexer.l
 
 # Compile y.tab.c and lex.yy.c
-cc y.tab.c lex.yy.c -ll -o parser
+gcc y.tab.c lex.yy.c -w -ll -o parser
 
 # Run the parser
 ./parser
