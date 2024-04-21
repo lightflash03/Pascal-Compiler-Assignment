@@ -5,6 +5,13 @@
 
 %x START_QUOTE 
 %x ANY_STRING
+%x ARRAY_BRACKET_OPEN
+%x FIRST_NUMBER
+%x ELIPSIS
+%x SECOND_NUMBER
+%x ARRAY_BRACKET_CLOSE
+%x AFTER_BRACKET_CLOSE
+%x ARRAY_TYPE
 
 %%
 
@@ -55,6 +62,40 @@
 
 "integer"|"real"|"boolean"|"char" {
     printf("data_type\n");
+    return DATA_TYPE;
+}
+
+"array" {
+    BEGIN ARRAY_BRACKET_OPEN;
+}
+
+<ARRAY_BRACKET_OPEN>"[" {
+    BEGIN FIRST_NUMBER;
+}
+
+<FIRST_NUMBER>[0-9]+ {
+    BEGIN ELIPSIS;
+}
+
+<ELIPSIS>".." {
+    BEGIN SECOND_NUMBER;
+}
+
+<SECOND_NUMBER>[0-9]+ {
+    BEGIN ARRAY_BRACKET_CLOSE;
+}
+
+<ARRAY_BRACKET_CLOSE>"]" {
+    BEGIN AFTER_BRACKET_CLOSE;
+}
+
+<AFTER_BRACKET_CLOSE>[" "]+"of"[" "]+ {
+    BEGIN ARRAY_TYPE;
+}
+
+<ARRAY_TYPE>"integer"|"real"|"boolean"|"char" {
+    printf("data_type\n");
+    BEGIN INITIAL;
     return DATA_TYPE;
 }
 
@@ -131,6 +172,10 @@
 
 [a-zA-Z][a-zA-Z0-9_]*   {
     printf("Identifier\n");
+    return IDENTIFIER;
+}
+
+[a-zA-Z][a-zA-Z0-9_]*"["[0-9]+"]" {
     return IDENTIFIER;
 }
 

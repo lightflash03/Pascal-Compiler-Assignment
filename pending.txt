@@ -1,0 +1,3 @@
+Arrays accesses to be done yet
+arr[2] works
+arr[i] and arr[2*i] don't

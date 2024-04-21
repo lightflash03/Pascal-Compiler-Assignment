@@ -1,14 +1,19 @@
-program factorialcalculation;
+program example9;
 var
-  number, factorial, i: integer;
+  i: integer;
+  okbro: array[1..10] of integer;
 begin
-  write("enter a number to calculate its factorial:");
-  read(number);
-  factorial := 1;
-  for i := number downto 1 do
+  i := 10;
+  i := okbro[89];
+  if i > 10 then
   begin
-    factorial := factorial * i;
+    i := 10;
+    i := i - 1;
+    write(i);
+  end
+  else
+  begin
+    i := 20;
+    write(i);
   end;
-  write("the factorial is: ");
-  write(factorial);
 end.

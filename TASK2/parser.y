@@ -72,8 +72,8 @@ conditional
 
 loop
     : WHILE expression DO TOKEN_BEGIN statements END 
-    | FOR IDENTIFIER ASSIGN expression DOWNTO expression DO TOKEN_BEGIN statement END
-    | FOR IDENTIFIER ASSIGN expression TO expression DO TOKEN_BEGIN statement END 
+    | FOR IDENTIFIER ASSIGN expression DOWNTO expression DO TOKEN_BEGIN statements END
+    | FOR IDENTIFIER ASSIGN expression TO expression DO TOKEN_BEGIN statements END 
     ;
 
 expression: arithmetic_expression
@@ -87,7 +87,8 @@ arithmetic_expression: arithmetic_expression ADD expression
                      | arithmetic_expression MULTIPLY expression
                      | arithmetic_expression DIVIDE expression
                      | arithmetic_expression MODULO expression
-                     | primary_expression;
+                     | primary_expression
+                     ;
 
 relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expression;
 
