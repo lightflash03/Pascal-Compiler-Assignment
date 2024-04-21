@@ -1,5 +1,4 @@
-#test_case_3 (while normal)
-1 PROGRAM KEYWORD
+1 program KEYWORD
 1 ReverseNumber IDENTIFIER
 1 ; PUNCTUATOR
 2 var KEYWORD

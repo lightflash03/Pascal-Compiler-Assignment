@@ -8,8 +8,9 @@ int lineNo=1;
 %s INPROGRAM
 
 %%
-[\s\S]*program { // Match any characters (including newlines) before "program"
-    fprintf(yyout, "%d PROGRAM KEYWORD\n", lineNo);
+
+program { // Match any characters (including newlines) before "program"
+    fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
     BEGIN(INPROGRAM);
 }
 
