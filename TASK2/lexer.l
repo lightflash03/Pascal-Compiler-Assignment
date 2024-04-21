@@ -43,6 +43,14 @@
     return MODULO;
 }
 
+"[" {
+    return SQUARE_OPEN;
+}
+
+"]" {
+    return SQUARE_CLOSE;
+}
+
 "="|"<"|">"|"<="|">="|"<>" {
     return RELATIONAL_OPERATOR;
 }
@@ -172,10 +180,6 @@
 
 [a-zA-Z][a-zA-Z0-9_]*   {
     printf("Identifier\n");
-    return IDENTIFIER;
-}
-
-[a-zA-Z][a-zA-Z0-9_]*"["[0-9]+"]" {
     return IDENTIFIER;
 }
 

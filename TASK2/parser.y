@@ -8,7 +8,7 @@ extern FILE *yyin;
 extern FILE *yyout;
 %}
 
-%token COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR PROGRAM DATA_TYPE VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY TOKEN_BEGIN END READ WRITE INTEGER_CONST STRING_CONSTANT REAL_CONST IDENTIFIER PUNCTUATOR
+%token SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR PROGRAM DATA_TYPE VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY TOKEN_BEGIN END READ WRITE INTEGER_CONST STRING_CONSTANT REAL_CONST IDENTIFIER PUNCTUATOR
 
 %left BINARY_BOOL_OPERATOR
 %left RELATIONAL_OPERATOR
@@ -57,12 +57,12 @@ statement
     : assignment
     | conditional
     | loop
-    | READ OPEN_BRACE IDENTIFIER CLOSED_BRACE
+    | READ OPEN_BRACE identifier CLOSED_BRACE
     | WRITE OPEN_BRACE output CLOSED_BRACE
     ;
 
 assignment
-    : IDENTIFIER ASSIGN expression
+    : identifier ASSIGN expression
     ;
 
 conditional
@@ -72,8 +72,8 @@ conditional
 
 loop
     : WHILE expression DO TOKEN_BEGIN statements END 
-    | FOR IDENTIFIER ASSIGN expression DOWNTO expression DO TOKEN_BEGIN statements END
-    | FOR IDENTIFIER ASSIGN expression TO expression DO TOKEN_BEGIN statements END 
+    | FOR identifier ASSIGN expression DOWNTO expression DO TOKEN_BEGIN statements END
+    | FOR identifier ASSIGN expression TO expression DO TOKEN_BEGIN statements END 
     ;
 
 expression: arithmetic_expression
@@ -96,9 +96,13 @@ boolean_expression: arithmetic_expression BINARY_BOOL_OPERATOR arithmetic_expres
                   | UNARY_BOOL_OPERATOR expression
                   ;
 
-primary_expression: IDENTIFIER
+primary_expression: identifier
                   | INTEGER_CONST
                   | REAL_CONST;
+
+identifier: IDENTIFIER
+          | IDENTIFIER SQUARE_OPEN expression SQUARE_CLOSE
+          ;
 
 output
     : output_list

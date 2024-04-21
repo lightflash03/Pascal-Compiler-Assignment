@@ -1,19 +1,20 @@
-program example9;
+program arrayaverage;
 var
-  i: integer;
-  okbro: array[1..10] of integer;
+  numbers: array[1..5] of integer;
+  i, sum : integer;
+  average : real;
 begin
-  i := 10;
-  i := okbro[89];
-  if i > 10 then
+  write("enter 5 integer values:");
+  for i := 1 to 5 do
   begin
-    i := 10;
-    i := i - 1;
-    write(i);
-  end
-  else
-  begin
-    i := 20;
-    write(i);
+    read(numbers[i]);
   end;
+  sum := 0;
+  for i := 1 to 5 do
+  begin
+    sum := sum + numbers[2*i];
+  end;
+  average := sum / 5;
+  write("the sum and average are: "); 
+  write(sum, average);
 end.
