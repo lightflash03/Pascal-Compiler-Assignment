@@ -1,14 +1,2 @@
-lex.yy.c
-prj.h
-prj.l
-prj.y
-prj.yy.c
-prj.tab.c
-prj.tab.h
-y.tab.c
-y.tab.h
-backupPRJ.y
-pending.txt
-makefile
-a.out
-./TASK2/
+*.c
+*.h
