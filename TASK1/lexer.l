@@ -6,6 +6,11 @@ int lineNo=1;
 %}
 
 %s INPROGRAM
+%s INARRAY
+%s READINGC1
+%s READDOTS
+%s READCLOSE
+%s READINGC2
 
 %%
 
@@ -90,8 +95,41 @@ program { // Match any characters (including newlines) before "program"
     fprintf(yyout, "%d %s LOOP\n", lineNo, yytext);
 }
 
-"array" {
-    // fprintf(yyout, "ARRAY\n");
+<INPROGRAM>"array" {
+    fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
+    BEGIN INARRAY;
+}
+
+<INARRAY>"[" {
+    BEGIN READINGC1;
+}
+
+<READINGC1>[0-9]+ {
+    fprintf(yyout, "%d %s INTEGER CONSTANT\n", lineNo, yytext);
+    BEGIN READDOTS;
+}
+
+<READDOTS>\.\. {
+    // fprintf(yyout, "%d %s INTEGER CONSTANT\n", lineNo, yytext);
+    BEGIN READINGC2;
+}
+
+<READINGC2>[0-9]+ {
+    fprintf(yyout, "%d %s INTEGER CONSTANT\n", lineNo, yytext);
+    BEGIN READCLOSE;
+}
+
+<READCLOSE>"]" {
+    // fprintf(yyout, "%d %s INTEGER CONSTANT\n", lineNo, yytext);
+    BEGIN INPROGRAM;
+}
+
+<INPROGRAM>[a-zA-Z][a-zA-Z0-9_]*"[".*"]" {
+    fprintf(yyout, "%d %s IDENTIFIER\n", lineNo, yytext);
+}
+
+<INPROGRAM>"of" {
+    fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
 <INPROGRAM>"begin" {
