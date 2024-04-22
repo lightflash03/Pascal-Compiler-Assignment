@@ -175,9 +175,6 @@ program { // Match any characters (including newlines) before "program"
     BEGIN DATA_TYPE_SEARCH;
 }
 
-\"([^\"\n]|\\.)*\" { 
-}
-
 %%
 
 int yywrap() { 
