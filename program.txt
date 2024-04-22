@@ -1,4 +1,4 @@
-program MaxValueArray;
+pRoGrAm MaxValueArray;
 var
   numbers: array[1..10] of Integer;
   i, maxValue: Integer;

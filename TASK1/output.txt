@@ -1,4 +1,4 @@
-1 program KEYWORD
+1 pRoGrAm KEYWORD
 1 MaxValueArray IDENTIFIER
 1 ; PUNCTUATOR
 2 var KEYWORD

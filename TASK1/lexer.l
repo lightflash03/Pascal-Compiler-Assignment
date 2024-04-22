@@ -15,7 +15,7 @@ int lineNo=1;
 
 %%
 
-program { // Match any characters (including newlines) before "program"
+[Pp][Rr][Oo][Gg][Rr][Aa][Mm] { // Match any characters (including newlines) before "program"
     fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
     BEGIN(INPROGRAM);
 }
@@ -106,7 +106,7 @@ program { // Match any characters (including newlines) before "program"
     BEGIN INARRAY;
 }
 
-<INARRAY>[[[] {
+<INARRAY>"[" {
     BEGIN READINGC1;
 }
 
@@ -125,12 +125,12 @@ program { // Match any characters (including newlines) before "program"
     BEGIN READCLOSE;
 }
 
-<READCLOSE>[]]] {
+<READCLOSE>"]" {
     // fprintf(yyout, "%d %s INTEGER_CONSTANT\n", lineNo, yytext);
     BEGIN INPROGRAM;
 }
 
-<INPROGRAM>[a-zA-Z][a-zA-Z0-9_]*[[[].*] {
+<INPROGRAM>[a-zA-Z][a-zA-Z0-9_]*"[".*"]" {
     fprintf(yyout, "%d %s IDENTIFIER\n", lineNo, yytext);
 }
 
