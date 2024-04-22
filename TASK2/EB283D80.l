@@ -165,7 +165,7 @@
     return READ;
 }
 
-"write" {
+"write"("ln")? {
     // printf("Write\n");
     return WRITE;
 }
