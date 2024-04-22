@@ -221,6 +221,10 @@
     return STRING_CONSTANT; 
 }
 
+\'.\' {
+    return CHARACTER_CONSTANT;
+}
+
 %%
 
 int yywrap() { 

@@ -32,6 +32,10 @@ int lineNo=1;
     printf("%d %s STRING_CONSTANT\n", lineNo, yytext);
 }
 
+<INPROGRAM>\'.\' {
+    printf("%d %s CHARACTER_CONSTANT\n", lineNo, yytext);
+}
+
 <INPROGRAM>":=" {
     printf("%d %s ASSIGN\n", lineNo, yytext);
 }
@@ -130,7 +134,7 @@ int lineNo=1;
     BEGIN INPROGRAM;
 }
 
-<INPROGRAM>[a-zA-Z][a-zA-Z0-9_]*"[".*"]" {
+<INPROGRAM>[a-zA-Z][a-zA-Z0-9_]*[" "]*"["[" "]*.*[" "]*"]" {
     printf("%d %s IDENTIFIER\n", lineNo, yytext);
 }
 

@@ -8,7 +8,7 @@ extern FILE *yyin;
 extern FILE *yyout;
 %}
 
-%token SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR PROGRAM DATA_TYPE VAR TO DOWNTO IF THEN ELSE WHILE FOR DO TOKEN_BEGIN END READ WRITE INTEGER_CONST STRING_CONSTANT REAL_CONST IDENTIFIER PUNCTUATOR
+%token CHARACTER_CONSTANT SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR PROGRAM DATA_TYPE VAR TO DOWNTO IF THEN ELSE WHILE FOR DO TOKEN_BEGIN END READ WRITE INTEGER_CONST STRING_CONSTANT REAL_CONST IDENTIFIER PUNCTUATOR
 
 %left BINARY_BOOL_OPERATOR
 %left RELATIONAL_OPERATOR
@@ -36,6 +36,7 @@ declaration_list
 multiple_lines
     : multiple_identifiers COLON DATA_TYPE SEMICOLON multiple_lines
     | multiple_identifiers COLON DATA_TYPE SEMICOLON
+    |
     ;
 
 multiple_identifiers
@@ -46,6 +47,7 @@ multiple_identifiers
 statements
     : 
     | statement SEMICOLON statements
+    | TOKEN_BEGIN statements END statements
     ;
 
 statement
@@ -88,13 +90,14 @@ arithmetic_expression: arithmetic_expression ADD expression
 relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expression
                      ;
 
-boolean_expression: arithmetic_expression BINARY_BOOL_OPERATOR arithmetic_expression
+boolean_expression: expression BINARY_BOOL_OPERATOR expression
                   | UNARY_BOOL_OPERATOR expression
                   ;
 
 primary_expression: identifier
                   | INTEGER_CONST
                   | REAL_CONST
+                  | CHARACTER_CONSTANT
                   ;
 
 identifier: IDENTIFIER
