@@ -10,7 +10,7 @@ flex lexer.l
 gcc y.tab.c lex.yy.c -w -ll -o parser
 
 # Run the parser
-./parser
+./parser program.txt
 
 # Clean up
-rm -f y.tab.c y.tab.h lex.yy.c .smallCase.txt parser 
+rm -f y.tab.c y.tab.h lex.yy.c .smallCase.txt parser

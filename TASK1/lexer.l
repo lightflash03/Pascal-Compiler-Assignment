@@ -181,8 +181,8 @@ int yywrap() {
     return 1;
 }
 
-int main()
+int main(int args, char* argv[])
 {
-    yyin = fopen("../program.txt", "r");
+    yyin = fopen(argv[1], "r");
     yylex();
 }

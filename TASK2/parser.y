@@ -127,8 +127,8 @@ void toLower(FILE* fptRead, FILE* fptWrite) {
     return;
 }
 
-int main() {
-	fptRead = fopen("program.txt","r+");
+int main(int argc, char *argv[]) {
+	fptRead = fopen(argv[1],"r+");
     fptWrite = fopen(".smallCase.txt", "w");
 	toLower(fptRead, fptWrite);
     fclose(fptRead);
