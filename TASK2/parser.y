@@ -115,7 +115,7 @@ output_list
 %%
 
 void yyerror(char *s) {
-    fprintf(yyout, "syntax error");
+    printf("syntax error\n");
     exit(1);
 }
 
@@ -135,10 +135,9 @@ int main() {
     fclose(fptWrite);
 
     yyin = fopen(".smallCase.txt", "r");
-    yyout = fopen("output.txt", "w");
 
     yyparse();
 
     // No error encountered
-    fprintf(yyout, "valid input");
+    printf("valid input\n");
 }
