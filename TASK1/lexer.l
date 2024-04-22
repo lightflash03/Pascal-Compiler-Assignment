@@ -52,11 +52,11 @@ program { // Match any characters (including newlines) before "program"
     fprintf(yyout, "%d %s RELATIONAL_OPERATOR\n", lineNo, yytext);
 }
 
-<INPROGRAM>"not" {
+<INPROGRAM>[Nn][Oo][Tt] {
     fprintf(yyout, "%d %s UNARY_BOOL_OPERATOR\n", lineNo, yytext);
 }
 
-<INPROGRAM>"and"|"or" {
+<INPROGRAM>[Aa][Nn][Dd]|[Oo][Rr] {
     fprintf(yyout, "%d %s BINARY_BOOL_OPERATOR\n", lineNo, yytext);
 }
 
@@ -65,48 +65,48 @@ program { // Match any characters (including newlines) before "program"
     BEGIN INPROGRAM;
 }
 
-<INPROGRAM>"var" {
+<INPROGRAM>[Vv][Aa][Rr] {
     fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
-<INPROGRAM>"to" {
+<INPROGRAM>[Tt][Oo] {
     fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
-<INPROGRAM>"downto" {
+<INPROGRAM>[Dd][Oo][Ww][Nn][Tt][Oo] {
     fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
-<INPROGRAM>"if" {
+<INPROGRAM>[Ii][Ff] {
     fprintf(yyout, "%d %s CONDITIONAL\n", lineNo, yytext);
 }
 
-<INPROGRAM>"then" {
+<INPROGRAM>[Tt][Hh][Ee][Nn] {
     fprintf(yyout, "%d %s CONDITIONAL\n", lineNo, yytext);
 }
 
-<INPROGRAM>"else" {
+<INPROGRAM>[Ee][Ll][Ss][Ee] {
     fprintf(yyout, "%d %s CONDITIONAL\n", lineNo, yytext);
 }
 
-<INPROGRAM>"while" {
+<INPROGRAM>[Ww][Hh][Ii][Ll][Ee] {
     fprintf(yyout, "%d %s LOOP\n", lineNo, yytext);
 }
 
-<INPROGRAM>"for" {
+<INPROGRAM>[Ff][Oo][Rr] {
     fprintf(yyout, "%d %s LOOP\n", lineNo, yytext);
 }
 
-<INPROGRAM>"do" {
+<INPROGRAM>[Dd][Oo] {
     fprintf(yyout, "%d %s LOOP\n", lineNo, yytext);
 }
 
-<DATA_TYPE_SEARCH>"array" {
+<DATA_TYPE_SEARCH>[Aa][Rr][Rr][Aa][Yy] {
     fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
     BEGIN INARRAY;
 }
 
-<INARRAY>"[" {
+<INARRAY>[[[] {
     BEGIN READINGC1;
 }
 
@@ -125,32 +125,32 @@ program { // Match any characters (including newlines) before "program"
     BEGIN READCLOSE;
 }
 
-<READCLOSE>"]" {
+<READCLOSE>[]]] {
     // fprintf(yyout, "%d %s INTEGER_CONSTANT\n", lineNo, yytext);
     BEGIN INPROGRAM;
 }
 
-<INPROGRAM>[a-zA-Z][a-zA-Z0-9_]*"[".*"]" {
+<INPROGRAM>[a-zA-Z][a-zA-Z0-9_]*[[[].*] {
     fprintf(yyout, "%d %s IDENTIFIER\n", lineNo, yytext);
 }
 
-<INPROGRAM>"of" {
+<INPROGRAM>[Oo][Ff] {
     fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
-<INPROGRAM>"begin" {
+<INPROGRAM>[Bb][Ee][Gg][Ii][Nn] {
     fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
-<INPROGRAM>"end" {
+<INPROGRAM>[Ee][Nn][Dd] {
     fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
-<INPROGRAM>"read" {
+<INPROGRAM>[Rr][Ee][Aa][Dd] {
     fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
-<INPROGRAM>"write" {
+<INPROGRAM>[Ww][Rr][Ii][Tt][Ee] {
     fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
