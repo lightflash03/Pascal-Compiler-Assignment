@@ -15,9 +15,13 @@
 
 %%
 
-[ \t\n]+                ; // Ignore whitespace
+[ \t\n]+ {
 
-"//".*                  ; // Ignore comments
+}
+
+"//".* {
+
+}
 
 ":=" {
     return ASSIGN;
@@ -64,12 +68,12 @@
 }
 
 "program" {
-    printf("Program\n");
+    // printf("Program\n");
     return PROGRAM;
 }
 
 "integer"|"real"|"boolean"|"char" {
-    printf("data_type\n");
+    // printf("data_type\n");
     return DATA_TYPE;
 }
 
@@ -102,23 +106,23 @@
 }
 
 <ARRAY_TYPE>"integer"|"real"|"boolean"|"char" {
-    printf("data_type\n");
+    // printf("data_type\n");
     BEGIN INITIAL;
     return DATA_TYPE;
 }
 
 "var" {
-    printf("Var\n");
+    // printf("Var\n");
     return VAR;
 }
 
 "to" {
-    printf("To\n");
+    // printf("To\n");
     return TO;
 }
 
 "downto" {
-    printf("Down to\n");
+    // printf("Down to\n");
     return DOWNTO;
 }
 
@@ -146,27 +150,23 @@
     return DO;
 }
 
-"array" {
-    return ARRAY;
-}
-
 "begin" {
-    printf("Begin\n");
+    // printf("Begin\n");
     return TOKEN_BEGIN;
 }
 
 "end" {
-    printf("End\n");
+    // printf("End\n");
     return END;
 }
 
 "read" {
-    printf("Read\n");
+    // printf("Read\n");
     return READ;
 }
 
 "write" {
-    printf("Write\n");
+    // printf("Write\n");
     return WRITE;
 }
 
@@ -179,7 +179,7 @@
 }
 
 [a-zA-Z][a-zA-Z0-9_]*   {
-    printf("Identifier\n");
+    // printf("Identifier\n");
     return IDENTIFIER;
 }
 
@@ -200,7 +200,7 @@
 }
 
 "(" {
-    printf("Open Bracket\n");
+    // printf("Open Bracket\n");
     return OPEN_BRACE;
 }
 
@@ -208,8 +208,7 @@
     return CLOSED_BRACE;
 }
 
-\" { // Check this 
-    // yylval.str = strdup(yytext);
+\" {
     BEGIN START_QUOTE;
 }
 

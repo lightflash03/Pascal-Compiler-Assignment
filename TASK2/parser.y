@@ -8,7 +8,7 @@ extern FILE *yyin;
 extern FILE *yyout;
 %}
 
-%token SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR PROGRAM DATA_TYPE VAR TO DOWNTO IF THEN ELSE WHILE FOR DO ARRAY TOKEN_BEGIN END READ WRITE INTEGER_CONST STRING_CONSTANT REAL_CONST IDENTIFIER PUNCTUATOR
+%token SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR PROGRAM DATA_TYPE VAR TO DOWNTO IF THEN ELSE WHILE FOR DO TOKEN_BEGIN END READ WRITE INTEGER_CONST STRING_CONSTANT REAL_CONST IDENTIFIER PUNCTUATOR
 
 %left BINARY_BOOL_OPERATOR
 %left RELATIONAL_OPERATOR
@@ -43,13 +43,8 @@ multiple_identifiers
     | IDENTIFIER
     ;
 
-// multiple_identifiers
-//     : IDENTIFIER
-//     | multiple_identifiers COMMA IDENTIFIER
-//     ;
-
 statements
-    : /* empty */
+    : 
     | statement SEMICOLON statements
     ;
 
@@ -90,7 +85,8 @@ arithmetic_expression: arithmetic_expression ADD expression
                      | primary_expression
                      ;
 
-relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expression;
+relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expression
+                     ;
 
 boolean_expression: arithmetic_expression BINARY_BOOL_OPERATOR arithmetic_expression
                   | UNARY_BOOL_OPERATOR expression
@@ -98,7 +94,8 @@ boolean_expression: arithmetic_expression BINARY_BOOL_OPERATOR arithmetic_expres
 
 primary_expression: identifier
                   | INTEGER_CONST
-                  | REAL_CONST;
+                  | REAL_CONST
+                  ;
 
 identifier: IDENTIFIER
           | IDENTIFIER SQUARE_OPEN expression SQUARE_CLOSE
@@ -118,7 +115,7 @@ output_list
 %%
 
 void yyerror(char *s) {
-    fprintf(yyout, "Error: %s\n", s);
+    fprintf(yyout, "syntax error");
     exit(1);
 }
 
@@ -143,5 +140,5 @@ int main() {
     yyparse();
 
     // No error encountered
-    fprintf(yyout, "No error");
+    fprintf(yyout, "valid input");
 }
