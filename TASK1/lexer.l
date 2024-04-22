@@ -11,6 +11,7 @@ int lineNo=1;
 %s READDOTS
 %s READCLOSE
 %s READINGC2
+%s DATA_TYPE_SEARCH
 
 %%
 
@@ -23,9 +24,13 @@ program { // Match any characters (including newlines) before "program"
     lineNo++;
 }
 
-<INPROGRAM>[ \t]+                ; // Ignore whitespace
+<INPROGRAM,DATA_TYPE_SEARCH,INARRAY,READINGC1,READDOTS,READCLOSE,READINGC2>[ \t]+                ; // Ignore whitespace
 
 <INPROGRAM>"//".*                  ; // Ignore comments
+
+<INPROGRAM>\".*\" {
+    fprintf(yyout, "%d %s STRING_CONSTANT\n", lineNo, yytext);
+}
 
 <INPROGRAM>":=" {
     fprintf(yyout, "%d %s ASSIGN\n", lineNo, yytext);
@@ -55,8 +60,9 @@ program { // Match any characters (including newlines) before "program"
     fprintf(yyout, "%d %s BINARY_BOOL_OPERATOR\n", lineNo, yytext);
 }
 
-<INPROGRAM>[Ii][Nn][Tt][Ee][Gg][Ee][Rr]|[Rr][Ee][Aa][Ll]|[Bb][Oo][Oo][Ll][Ee][Aa][Nn]|[Cc][Hh][Aa][Rr] {
+<INPROGRAM,DATA_TYPE_SEARCH>[Ii][Nn][Tt][Ee][Gg][Ee][Rr]|[Rr][Ee][Aa][Ll]|[Bb][Oo][Oo][Ll][Ee][Aa][Nn]|[Cc][Hh][Aa][Rr] {
     fprintf(yyout, "%d %s DATA_TYPE\n", lineNo, yytext);
+    BEGIN INPROGRAM;
 }
 
 <INPROGRAM>"var" {
@@ -68,7 +74,7 @@ program { // Match any characters (including newlines) before "program"
 }
 
 <INPROGRAM>"downto" {
-    fprintf(yyout, "DOWNTO\n");
+    fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
 }
 
 <INPROGRAM>"if" {
@@ -95,7 +101,7 @@ program { // Match any characters (including newlines) before "program"
     fprintf(yyout, "%d %s LOOP\n", lineNo, yytext);
 }
 
-<INPROGRAM>"array" {
+<DATA_TYPE_SEARCH>"array" {
     fprintf(yyout, "%d %s KEYWORD\n", lineNo, yytext);
     BEGIN INARRAY;
 }
@@ -105,22 +111,22 @@ program { // Match any characters (including newlines) before "program"
 }
 
 <READINGC1>[0-9]+ {
-    fprintf(yyout, "%d %s INTEGER CONSTANT\n", lineNo, yytext);
+    fprintf(yyout, "%d %s INTEGER_CONSTANT\n", lineNo, yytext);
     BEGIN READDOTS;
 }
 
 <READDOTS>\.\. {
-    // fprintf(yyout, "%d %s INTEGER CONSTANT\n", lineNo, yytext);
+    // fprintf(yyout, "%d %s INTEGER_CONSTANT\n", lineNo, yytext);
     BEGIN READINGC2;
 }
 
 <READINGC2>[0-9]+ {
-    fprintf(yyout, "%d %s INTEGER CONSTANT\n", lineNo, yytext);
+    fprintf(yyout, "%d %s INTEGER_CONSTANT\n", lineNo, yytext);
     BEGIN READCLOSE;
 }
 
 <READCLOSE>"]" {
-    // fprintf(yyout, "%d %s INTEGER CONSTANT\n", lineNo, yytext);
+    // fprintf(yyout, "%d %s INTEGER_CONSTANT\n", lineNo, yytext);
     BEGIN INPROGRAM;
 }
 
@@ -153,15 +159,20 @@ program { // Match any characters (including newlines) before "program"
 }
 
 <INPROGRAM>[0-9]+"."[0-9]+ { 
-    fprintf(yyout, "%d %s REALCONSTANT\n", lineNo, yytext);
+    fprintf(yyout, "%d %s REAL_CONSTANT\n", lineNo, yytext);
 }
 
 <INPROGRAM>[a-zA-Z][a-zA-Z0-9_]*   {
     fprintf(yyout, "%d %s IDENTIFIER\n", lineNo, yytext);
 }
 
-<INPROGRAM>"."|";"|","|":"|"("|")" {
+<INPROGRAM>"."|";"|","|"("|")" {
     fprintf(yyout, "%d %s PUNCTUATOR\n", lineNo, yytext);
+}
+
+<INPROGRAM>":" {
+    fprintf(yyout, "%d %s PUNCTUATOR\n", lineNo, yytext);
+    BEGIN DATA_TYPE_SEARCH;
 }
 
 \"([^\"\n]|\\.)*\" { 

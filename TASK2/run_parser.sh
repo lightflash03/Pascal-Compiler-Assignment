@@ -13,4 +13,4 @@ gcc y.tab.c lex.yy.c -w -ll -o parser
 ./parser
 
 # Clean up
-rm -f y.tab.c y.tab.h lex.yy.c parser
+rm -f y.tab.c y.tab.h lex.yy.c .smallCase.txt parser 
