@@ -7,7 +7,7 @@ begin
   begin
     i := 10;
     i := i - 1;
-    writeln(i);
+    write(i);
   end
   else
   begin

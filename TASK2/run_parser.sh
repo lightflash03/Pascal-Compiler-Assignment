@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Generate y.tab.c from parser.y
-yacc -d --warnings=none EB283D80.y
+yacc -d -Wcounterexamples EB283D80.y
 
 # Generate lex.yy.c from lexer.l
 flex EB283D80.l

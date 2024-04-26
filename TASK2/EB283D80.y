@@ -36,7 +36,6 @@ declaration_list
 multiple_lines
     : multiple_identifiers COLON DATA_TYPE SEMICOLON multiple_lines
     | multiple_identifiers COLON DATA_TYPE SEMICOLON
-    |
     ;
 
 multiple_identifiers
@@ -76,14 +75,16 @@ loop
 expression: arithmetic_expression
           | relational_expression
           | boolean_expression
-          | OPEN_BRACE expression CLOSED_BRACE
+          | OPEN_BRACE boolean_expression CLOSED_BRACE
+          | OPEN_BRACE relational_expression CLOSED_BRACE
           ;
 
-arithmetic_expression: arithmetic_expression ADD expression
-                     | arithmetic_expression SUBTRACT expression
-                     | arithmetic_expression MULTIPLY expression
-                     | arithmetic_expression DIVIDE expression
-                     | arithmetic_expression MODULO expression
+arithmetic_expression: arithmetic_expression ADD arithmetic_expression
+                     | arithmetic_expression SUBTRACT arithmetic_expression
+                     | arithmetic_expression MULTIPLY arithmetic_expression
+                     | arithmetic_expression DIVIDE arithmetic_expression
+                     | arithmetic_expression MODULO arithmetic_expression
+                     | OPEN_BRACE arithmetic_expression CLOSED_BRACE
                      | primary_expression
                      ;
 
