@@ -1,0 +1,1 @@
+[PRO[FST[DS[int][SP][var:{a}][,][var:{b}][,][var:{i}][;]]][MST[S[AS[var:{a}][=][ES[REX[V[T[F[INTC:{10}]]]]]][;]]][MST[S[AS[var:{a}][=][ES[REX[V[T[F[var:{a}]]][+][V[T[F[var:{i}]]]]]]][;]]][MST[S[AS[var:{b}][=][ES[REX[V[T[F[var:{b}]][*][T[F[var:{i}]]]]]]][;]]][MST[S[WRS[write][SP][var:{a}][;]]][MST[S[WRS[write][SP][var:{b}][;]]]]]]]]]
