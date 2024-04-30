@@ -1,8 +1,9 @@
 program Example9;
 var
-  i,a,b,c: Integer;
+  a,b,c: Integer;
   d,e,f: real;
-  g,h,j: boolean;
+  g,h,e,j,b: boolean;
+  k,l,m: char;
 
 begin
   i := 10;

@@ -81,10 +81,22 @@ declaration_line
 
 multiple_identifiers
     : IDENTIFIER COMMA multiple_identifiers {
+        for (int i=0; i<current_size; i++) {
+            if (strcmp(symbolTable[i].name, $1) == 0) {
+                printf("[ERROR] multiple declarations of a variable: %s\n", $1);
+                exit(1);
+            }
+        }
         strcpy(symbolTable[current_size].name, $1);
         symbolTable[current_size++].datatype = 0;
     }
     | IDENTIFIER {
+        for (int i=0; i<current_size; i++) {
+            if (strcmp(symbolTable[i].name, $1) == 0) {
+                printf("[ERROR] multiple declarations of a variable: %s\n", $1);
+                exit(1);
+            }
+        }
         strcpy(symbolTable[current_size].name, $1);
         symbolTable[current_size++].datatype = 0;
     }
@@ -194,17 +206,20 @@ int main(int argc, char *argv[]) {
     // No error encountered
     printf("valid input\n");
 
-    printf(" name | type \n-------------\n");
+    printf("Symbol Table\n");
+    printf("+---------------------------------+\n| Variable |   Type   |   Value   |\n|---------------------------------|\n");
 
     for (int i=0; i<current_size; i++) {
         if (symbolTable[i].datatype == 1)
-            printf("%6s|%6s\n", symbolTable[i].name, "int");
+            printf("| %8s |   %4s   | %9d |\n", symbolTable[i].name, "int", symbolTable[i].val.ival);
         else if (symbolTable[i].datatype == 2)
-            printf("%6s|%6s\n", symbolTable[i].name, "real");
+            printf("| %8s |   %4s   | %9.4f |\n", symbolTable[i].name, "real", symbolTable[i].val.dval);
         else if (symbolTable[i].datatype == 3)
-            printf("%6s|%6s\n", symbolTable[i].name, "bool");
+            printf("| %8s |   %4s   | %9d |\n", symbolTable[i].name, "bool", symbolTable[i].val.ival);
         else if (symbolTable[i].datatype == 4)
-            printf("%6s|%6s\n", symbolTable[i].name, "char");
+            printf("| %8s |   %4s   | %9s |\n", symbolTable[i].name, "char", symbolTable[i].val.sval);
     };
+
+    printf("+---------------------------------+\n");
 
 }
