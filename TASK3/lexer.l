@@ -183,7 +183,6 @@
 
 [a-zA-Z][a-zA-Z0-9_]*   {
     yylval.attr.sval = strdup(yytext);
-    yylval.attr.assigned = false;
     return IDENTIFIER;
 }
 

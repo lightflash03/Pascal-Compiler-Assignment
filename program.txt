@@ -6,5 +6,8 @@ var
   k,l,m: char;
 
 begin
-  d := i + m;
+  i := 10;
+  d := i;
+  f := 1 + i;
+  e := f + d;
 end.

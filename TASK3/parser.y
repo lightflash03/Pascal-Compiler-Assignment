@@ -16,6 +16,7 @@ typedef struct {
         float dval;
         char sval;
     } val;
+    bool declared, assigned;
 } Symbol;
 
 Symbol symbolTable[100];
@@ -73,8 +74,12 @@ multiple_lines
 declaration_line
     : multiple_identifiers COLON DATA_TYPE SEMICOLON {
         for (int i=0; i<current_size; i++) {
-            if(symbolTable[i].datatype == 0)
+            // if(symbolTable[i].datatype == 0)
+            if (!(symbolTable[i].declared)) {
+                symbolTable[i].declared = true;
+                symbolTable[i].assigned = false;
                 symbolTable[i].datatype = $3.datatype;
+            }
         }
     }
     ;
@@ -88,7 +93,9 @@ multiple_identifiers
             }
         }
         strcpy(symbolTable[current_size].name, $1.sval);
-        symbolTable[current_size++].datatype = 0;
+        // symbolTable[current_size++].datatype = 0;
+        symbolTable[current_size++].declared = false;
+        $1.assigned = false;
     }
     | IDENTIFIER {
         for (int i=0; i<current_size; i++) {
@@ -98,7 +105,9 @@ multiple_identifiers
             }
         }
         strcpy(symbolTable[current_size].name, $1.sval);
-        symbolTable[current_size++].datatype = 0;
+        // symbolTable[current_size++].datatype = 0;
+        symbolTable[current_size++].declared = false;
+        $1.assigned = false;
     }
     ;
 
@@ -119,9 +128,17 @@ statement
 assignment
     : identifier ASSIGN expression {
         if (!($1.datatype == $3.datatype || ($1.datatype == 2 && $3.datatype == 1))) {
-            printf("122: $1: %d $3: %d\n", $1.datatype, $3.datatype);
+            // printf("122: $1: %d $3: %d\n", $1.datatype, $3.datatype);
             printf("[ERROR] type error \n");
             error = true;
+        } else {
+            for (int i=0; i<current_size; i++) {
+                if (strcmp(symbolTable[i].name, $1.sval) == 0) {
+                    symbolTable[i].assigned = true;
+                    break;
+                }
+            }
+            // printf("Assigned %s\n", $1.sval);
         }
     }
     ;
@@ -139,7 +156,7 @@ loop
 
 expression: arithmetic_expression {
             $$.datatype = $1.datatype;
-            printf("Exprssn -> Arith: $1: %d $$: %d\n", $1.datatype, $$.datatype);
+            // printf("Exprssn -> Arith: $1: %d $$: %d\n", $1.datatype, $$.datatype);
         }
           | relational_expression
           | boolean_expression
@@ -149,59 +166,59 @@ expression: arithmetic_expression {
 
 arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                         if ($1.datatype == $3.datatype) {
-                            printf("Arith ADD: $1: %d $3: %d\n", $1.datatype, $3.datatype);
+                            // printf("Arith ADD: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = $1.datatype;
                         } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
-                            printf("Arith ADD: $1: %d $3: %d\n", $1.datatype, $3.datatype);
+                            // printf("Arith ADD: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = 2;
                         } else {
-                            printf("155: $1: %d $3: %d\n", $1.datatype, $3.datatype);
+                            // printf("155: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             printf("[ERROR] type error \n");
                             error = true;
                         }
                     }
                      | arithmetic_expression SUBTRACT arithmetic_expression {
                         if ($1.datatype == $3.datatype) {
-                            printf("Arith SUB: $1: %d $3: %d\n", $1.datatype, $3.datatype);
+                            // printf("Arith SUB: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = $1.datatype;
                         } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
-                            printf("Arith SUB: $1: %d $3: %d\n", $1.datatype, $3.datatype);
+                            // printf("Arith SUB: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = 2;
                         } else {
-                            printf("166: $1: %d $3: %d\n", $1.datatype, $3.datatype);
+                            // printf("166: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             printf("[ERROR] type error \n");
                             error = true;
                         }
                     }
                      | arithmetic_expression MULTIPLY arithmetic_expression {
                         if ($1.datatype == $3.datatype) {
-                            printf("Arith MULT: $1: %d $3: %d\n", $1.datatype, $3.datatype);
+                            // printf("Arith MULT: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = $1.datatype;
                         } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
-                            printf("Arith MULT: $1: %d $3: %d\n", $1.datatype, $3.datatype);
+                            // printf("Arith MULT: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = 2;
                         } else {
-                            printf("177: $1: %d $3: %d\n", $1.datatype, $3.datatype);
+                            // printf("177: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             printf("[ERROR] type error \n");
                             error = true;
                         }
                     }
                      | arithmetic_expression DIVIDE arithmetic_expression {
                         if (($1.datatype == $3.datatype) || (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2))) {
-                            printf("Arith DIV: $1: %d $3: %d\n", $1.datatype, $3.datatype);
+                            // printf("Arith DIV: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = 2;
                         } else {
-                            printf("186: $1: %d $3: %d\n", $1.datatype, $3.datatype);
+                            // printf("186: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             printf("[ERROR] type error \n");
                             error = true;
                         }
                     }
                      | arithmetic_expression MODULO arithmetic_expression {
                         if ($1.datatype == 1 && $3.datatype == 1) {
-                            printf("Arith MOD: $1: %d $3: %d\n", $1.datatype, $3.datatype);
+                            // printf("Arith MOD: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = 1;
                         } else {
-                            printf("195: $1: %d $3: %d\n", $1.datatype, $3.datatype);
+                            // printf("195: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             printf("[ERROR] type error \n");
                             error = true;
                         }
@@ -221,7 +238,17 @@ boolean_expression: expression BINARY_BOOL_OPERATOR expression
                   | UNARY_BOOL_OPERATOR expression
                   ;
 
-primary_expression: identifier
+primary_expression: identifier {
+                    for (int i=0; i<current_size; i++) {
+                        if (strcmp(symbolTable[i].name, $1.sval) == 0) {
+                            if (!(symbolTable[i].assigned)) {
+                                printf("[ERROR] variable not assigned: %s\n", $1.sval);
+                                error = true;
+                            }
+                            break;
+                        }
+                    }
+                  }
                   | INTEGER_CONST {
                     $$.datatype = 1;
                     $$.ival = (int)$1.ival;
@@ -242,6 +269,9 @@ identifier: IDENTIFIER {
             if (strcmp(symbolTable[i].name, $1.sval) == 0) {
                 $1.datatype = symbolTable[i].datatype;
                 flag = false;
+                if ($$.assigned) {
+                    symbolTable[i].assigned = true;
+                }
                 break;
             }
         }
@@ -300,14 +330,30 @@ int main(int argc, char *argv[]) {
     printf("+---------------------------------+\n| Variable |   Type   |   Value   |\n|---------------------------------|\n");
 
     for (int i=0; i<current_size; i++) {
-        if (symbolTable[i].datatype == 1)
-            printf("| %8s |   %4s   | %9d |\n", symbolTable[i].name, "int", symbolTable[i].val.ival);
-        else if (symbolTable[i].datatype == 2)
-            printf("| %8s |   %4s   | %9.4f |\n", symbolTable[i].name, "real", symbolTable[i].val.dval);
-        else if (symbolTable[i].datatype == 3)
-            printf("| %8s |   %4s   | %9d |\n", symbolTable[i].name, "bool", symbolTable[i].val.ival);
-        else if (symbolTable[i].datatype == 4)
-            printf("| %8s |   %4s   | %9s |\n", symbolTable[i].name, "char", symbolTable[i].val.sval);
+        if (symbolTable[i].datatype == 1) {
+            if (symbolTable[i].assigned)
+                printf("| %8s |   %4s   | %9d |\n", symbolTable[i].name, "int", symbolTable[i].val.ival);
+            else 
+                printf("| %8s |   %4s   |     %1s     |\n", symbolTable[i].name, "int", "-");
+        }
+        else if (symbolTable[i].datatype == 2) {
+            if (symbolTable[i].assigned)
+                printf("| %8s |   %4s   | %9.4f |\n", symbolTable[i].name, "real", symbolTable[i].val.dval);
+            else 
+                printf("| %8s |   %4s   |     %1s     |\n", symbolTable[i].name, "int", "-");
+        }
+        else if (symbolTable[i].datatype == 3) {
+            if (symbolTable[i].assigned)
+                printf("| %8s |   %4s   | %9d |\n", symbolTable[i].name, "bool", symbolTable[i].val.ival);
+            else 
+                printf("| %8s |   %4s   |     %1s     |\n", symbolTable[i].name, "int", "-");
+        }
+        else if (symbolTable[i].datatype == 4) {
+            if (symbolTable[i].assigned)
+                printf("| %8s |   %4s   | %9s |\n", symbolTable[i].name, "char", symbolTable[i].val.sval);
+            else 
+                printf("| %8s |   %4s   |     %1s     |\n", symbolTable[i].name, "int", "-");
+        }
     };
 
     printf("+---------------------------------+\n");
