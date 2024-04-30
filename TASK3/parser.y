@@ -164,7 +164,19 @@ primary_expression: identifier
                   | CHARACTER_CONSTANT
                   ;
 
-identifier: IDENTIFIER
+identifier: IDENTIFIER {
+    bool flag = true;
+    for (int i=0; i<current_size; i++) {
+        if (strcmp(symbolTable[i].name, $1) == 0) {
+            flag = false;
+            break;
+        }
+    }
+    if (flag) {
+        error = true;
+        printf("[ERROR] undeclared variable: %s\n", $1);
+    }
+}
           | IDENTIFIER SQUARE_OPEN expression SQUARE_CLOSE
           ;
 
