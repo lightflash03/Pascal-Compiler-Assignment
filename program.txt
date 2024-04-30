@@ -6,17 +6,5 @@ var
   k,l,m: char;
 
 begin
-  i := 10;
-  d := i + 'c';
-  if i > 10 then
-  begin
-    i := 10;
-    i := i - 1;
-    write(i);
-  end
-  else
-  begin
-    i := 20;
-    write(i);
-  end;
+  d := i + m;
 end.

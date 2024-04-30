@@ -70,7 +70,6 @@
 }
 
 "program" {
-    // printf("Program\n");
     return PROGRAM;
 }
 
@@ -116,23 +115,19 @@
 }
 
 <ARRAY_TYPE>"integer"|"real"|"boolean"|"char" {
-    // printf("data_type\n");
     BEGIN INITIAL;
     return DATA_TYPE;
 }
 
 "var" {
-    // printf("Var\n");
     return VAR;
 }
 
 "to" {
-    // printf("To\n");
     return TO;
 }
 
 "downto" {
-    // printf("Down to\n");
     return DOWNTO;
 }
 
@@ -161,7 +156,6 @@
 }
 
 "begin" {
-    // printf("Begin\n");
     return TOKEN_BEGIN;
 }
 

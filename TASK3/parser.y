@@ -118,8 +118,8 @@ statement
 
 assignment
     : identifier ASSIGN expression {
-        if (!($1.datatype == $3.datatype || ($1.datatype == 2 && $3.datatype == 1)))  {
-            printf("$1: %d $3: %d\n", $1, $3);
+        if (!($1.datatype == $3.datatype || ($1.datatype == 2 && $3.datatype == 1))) {
+            printf("122: $1: %d $3: %d\n", $1.datatype, $3.datatype);
             printf("[ERROR] type error \n");
             error = true;
         }
@@ -152,6 +152,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                         } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
                             $$.datatype = 2;
                         } else {
+                            printf("155: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             printf("[ERROR] type error \n");
                             error = true;
                         }
@@ -162,6 +163,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                         } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
                             $$.datatype = 2;
                         } else {
+                            printf("166: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             printf("[ERROR] type error \n");
                             error = true;
                         }
@@ -172,6 +174,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                         } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
                             $$.datatype = 2;
                         } else {
+                            printf("177: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             printf("[ERROR] type error \n");
                             error = true;
                         }
@@ -180,6 +183,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                         if (($1.datatype == $3.datatype) || (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2))) {
                             $$.datatype = 2;
                         } else {
+                            printf("186: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             printf("[ERROR] type error \n");
                             error = true;
                         }
@@ -188,6 +192,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                         if ($1.datatype == 1 && $3.datatype == 1) {
                             $$.datatype = 1;
                         } else {
+                            printf("195: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             printf("[ERROR] type error \n");
                             error = true;
                         }
@@ -217,7 +222,7 @@ primary_expression: identifier
                     $$.dval = (float)$1.dval;
                   }
                   | CHARACTER_CONSTANT {
-                    $$.datatype = 3;
+                    $$.datatype = 4;
                     $$.cval = (char)$1.cval;
                   }
                   ;
