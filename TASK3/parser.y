@@ -20,8 +20,10 @@ typedef struct {
 
 Symbol symbolTable[100];
 
-int current_type = 0 ;
+int current_type = 0;
 int current_size = 0;
+
+bool error = false;
 
 %}
 
@@ -84,7 +86,7 @@ multiple_identifiers
         for (int i=0; i<current_size; i++) {
             if (strcmp(symbolTable[i].name, $1) == 0) {
                 printf("[ERROR] multiple declarations of a variable: %s\n", $1);
-                exit(1);
+                error = true;
             }
         }
         strcpy(symbolTable[current_size].name, $1);
@@ -94,7 +96,7 @@ multiple_identifiers
         for (int i=0; i<current_size; i++) {
             if (strcmp(symbolTable[i].name, $1) == 0) {
                 printf("[ERROR] multiple declarations of a variable: %s\n", $1);
-                exit(1);
+                error = true;
             }
         }
         strcpy(symbolTable[current_size].name, $1);
@@ -203,8 +205,10 @@ int main(int argc, char *argv[]) {
 
     yyparse();
 
-    // No error encountered
-    printf("valid input\n");
+    if (error) {
+        printf("Exiting because of semantic errors\n");
+        return 1;
+    }
 
     printf("Symbol Table\n");
     printf("+---------------------------------+\n| Variable |   Type   |   Value   |\n|---------------------------------|\n");
