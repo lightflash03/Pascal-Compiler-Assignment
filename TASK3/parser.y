@@ -70,21 +70,31 @@ declaration_list
 // Doesn't support the case of no declarations
 multiple_lines
     : multiple_identifiers COLON DATA_TYPE SEMICOLON multiple_lines {
-        current_type = $3;
+        for (int i = 0; i < current_size; i++) {
+            if(symbolTable[i].datatype == 0) {
+                printf("name: %s and datatype: %d\n", symbolTable[i].name, $3);
+                symbolTable[i].datatype = $3;
+            }
+        }
     }
     | multiple_identifiers COLON DATA_TYPE SEMICOLON {
-        current_type = $3;
+        for (int i = 0; i < current_size; i++) {
+            if(symbolTable[i].datatype == 0) {
+                printf("name: %s and datatype: %d\n", symbolTable[i].name, $3);
+                symbolTable[i].datatype = $3;
+            }
+        }
     }
     ;
 
 multiple_identifiers
     : IDENTIFIER COMMA multiple_identifiers {
         strcpy(symbolTable[current_size].name, $1);
-        symbolTable[current_size++].datatype = current_type;
+        symbolTable[current_size++].datatype = 0;
     }
     | IDENTIFIER {
         strcpy(symbolTable[current_size].name, $1);
-        symbolTable[current_size++].datatype = current_type;
+        symbolTable[current_size++].datatype = 0;
     }
     ;
 
