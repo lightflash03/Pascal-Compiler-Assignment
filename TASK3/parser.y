@@ -60,29 +60,21 @@ program
     ;
 
 declarations
-    : VAR declaration_list 
+    : VAR multiple_lines
     ;
 
-declaration_list
-    : multiple_lines
+multiple_lines
+    : declaration_line multiple_lines
+    | declaration_line
     ;
 
 // Doesn't support the case of no declarations
-multiple_lines
-    : multiple_identifiers COLON DATA_TYPE SEMICOLON multiple_lines {
-        for (int i = 0; i < current_size; i++) {
-            if(symbolTable[i].datatype == 0) {
-                printf("name: %s and datatype: %d\n", symbolTable[i].name, $3);
+declaration_line
+    : multiple_identifiers COLON DATA_TYPE SEMICOLON {
+        for (int i=0; i<current_size; i++) {
+            // printf("%s\n", symbolTable[i].name);
+            if(symbolTable[i].datatype == 0)
                 symbolTable[i].datatype = $3;
-            }
-        }
-    }
-    | multiple_identifiers COLON DATA_TYPE SEMICOLON {
-        for (int i = 0; i < current_size; i++) {
-            if(symbolTable[i].datatype == 0) {
-                printf("name: %s and datatype: %d\n", symbolTable[i].name, $3);
-                symbolTable[i].datatype = $3;
-            }
         }
     }
     ;
@@ -202,10 +194,17 @@ int main(int argc, char *argv[]) {
     // No error encountered
     printf("valid input\n");
 
-    printf(" name | type \n");
+    printf(" name | type \n-------------\n");
 
     for (int i=0; i<current_size; i++) {
-        printf("%6s|%6d\n", symbolTable[i].name, symbolTable[i].datatype);
+        if (symbolTable[i].datatype == 1)
+            printf("%6s|%6s\n", symbolTable[i].name, "int");
+        else if (symbolTable[i].datatype == 2)
+            printf("%6s|%6s\n", symbolTable[i].name, "real");
+        else if (symbolTable[i].datatype == 3)
+            printf("%6s|%6s\n", symbolTable[i].name, "bool");
+        else if (symbolTable[i].datatype == 4)
+            printf("%6s|%6s\n", symbolTable[i].name, "char");
     };
 
 }
