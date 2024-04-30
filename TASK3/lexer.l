@@ -75,15 +75,14 @@
 }
 
 "integer"|"real"|"boolean"|"char" {
-    // printf("data_type\n");
     if (strcmp(strdup(yytext), "integer") == 0) {
-        yylval.datatype = 1;
+        yylval.attr.datatype = 1;
     } else if (strcmp(strdup(yytext), "real") == 0) {
-        yylval.datatype = 2;
+        yylval.attr.datatype = 2;
     } else if (strcmp(strdup(yytext), "boolean") == 0) {
-        yylval.datatype = 3;
+        yylval.attr.datatype = 3;
     } else if (strcmp(strdup(yytext), "char") == 0) {
-        yylval.datatype = 4;
+        yylval.attr.datatype = 4;
     }
     return DATA_TYPE;
 }
@@ -167,31 +166,30 @@
 }
 
 "end" {
-    // printf("End\n");
     return END;
 }
 
 "read" {
-    // printf("Read\n");
     return READ;
 }
 
 "write"("ln")? {
-    // printf("Write\n");
     return WRITE;
 }
 
-[0-9]+ { 
-    return INTEGER_CONST; 
+[0-9]+ {
+    yylval.attr.ival = atoi(yytext);
+    return INTEGER_CONST;
 }
 
-[0-9]+"."[0-9]+ { 
+[0-9]+"."[0-9]+ {
+    yylval.attr.dval = atof(yytext);
     return REAL_CONST; 
 }
 
 [a-zA-Z][a-zA-Z0-9_]*   {
-    // printf("Identifier\n");
-    yylval.identifier_attr.sval = strdup(yytext);
+    yylval.attr.sval = strdup(yytext);
+    yylval.attr.assigned = false;
     return IDENTIFIER;
 }
 
@@ -212,7 +210,6 @@
 }
 
 "(" {
-    // printf("Open Bracket\n");
     return OPEN_BRACE;
 }
 
@@ -234,6 +231,7 @@
 }
 
 \'.\' {
+    yylval.attr.cval = yytext[1];
     return CHARACTER_CONSTANT;
 }
 

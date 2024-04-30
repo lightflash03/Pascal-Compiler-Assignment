@@ -18,12 +18,6 @@ typedef struct {
     } val;
 } Symbol;
 
-// typedef struct identifier_ {
-//     char *sval;
-//     bool declared;
-//     bool assigned;
-// } identifier_attributes;
-
 Symbol symbolTable[100];
 
 int current_size = 0;
@@ -33,27 +27,22 @@ bool error = false;
 %}
 
 %union {
-    // datatype, value, declared
-    bool bval;
-    int ival;
-    float dval;
-    char cval;
-    struct identifier_ {
+    struct attributes {
+        int datatype;
+        bool bval;
+        int ival;
+        float dval;
+        char cval;
         char *sval;
         bool declared;
         bool assigned;
     };
-    struct identifier_ identifier_attr;
-    int datatype;
+    struct attributes attr;
 }
 
-%token <ival> INTEGER_CONST
-%token <dval> REAL_CONST
-%token <cval> CHARACTER_CONSTANT
-%token <identifier_attr> IDENTIFIER
-%token <datatype> DATA_TYPE
+%token <attr> INTEGER_CONST REAL_CONST CHARACTER_CONSTANT IDENTIFIER DATA_TYPE
 
-%type <dval> primary_expression
+%type <attr> expression primary_expression arithmetic_expression relational_expression boolean_expression identifier
 
 %token SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR PROGRAM VAR TO DOWNTO IF THEN ELSE WHILE FOR DO TOKEN_BEGIN END READ WRITE STRING_CONSTANT PUNCTUATOR
 
@@ -84,9 +73,8 @@ multiple_lines
 declaration_line
     : multiple_identifiers COLON DATA_TYPE SEMICOLON {
         for (int i=0; i<current_size; i++) {
-            // printf("%s\n", symbolTable[i].name);
             if(symbolTable[i].datatype == 0)
-                symbolTable[i].datatype = $3;
+                symbolTable[i].datatype = $3.datatype;
         }
     }
     ;
@@ -115,7 +103,7 @@ multiple_identifiers
     ;
 
 statements
-    : 
+    :
     | statement SEMICOLON statements
     | TOKEN_BEGIN statements END statements
     ;
@@ -129,7 +117,13 @@ statement
     ;
 
 assignment
-    : identifier ASSIGN expression
+    : identifier ASSIGN expression {
+        if (!($1.datatype == $3.datatype || ($1.datatype == 2 && $3.datatype == 1)))  {
+            printf("$1: %d $3: %d\n", $1, $3);
+            printf("[ERROR] type error \n");
+            error = true;
+        }
+    }
     ;
 
 conditional
@@ -143,20 +137,67 @@ loop
     | FOR identifier ASSIGN expression TO expression DO TOKEN_BEGIN statements END 
     ;
 
-expression: arithmetic_expression
+expression: arithmetic_expression {
+            $$.datatype = $1.datatype;
+        }
           | relational_expression
           | boolean_expression
           | OPEN_BRACE boolean_expression CLOSED_BRACE
           | OPEN_BRACE relational_expression CLOSED_BRACE
           ;
 
-arithmetic_expression: arithmetic_expression ADD arithmetic_expression
-                     | arithmetic_expression SUBTRACT arithmetic_expression
-                     | arithmetic_expression MULTIPLY arithmetic_expression
-                     | arithmetic_expression DIVIDE arithmetic_expression
-                     | arithmetic_expression MODULO arithmetic_expression
-                     | OPEN_BRACE arithmetic_expression CLOSED_BRACE
-                     | primary_expression
+arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
+                        if ($1.datatype == $3.datatype) {
+                            $$.datatype = $1.datatype;
+                        } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
+                            $$.datatype = 2;
+                        } else {
+                            printf("[ERROR] type error \n");
+                            error = true;
+                        }
+                    }
+                     | arithmetic_expression SUBTRACT arithmetic_expression {
+                        if ($1.datatype == $3.datatype) {
+                            $$.datatype = $1.datatype;
+                        } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
+                            $$.datatype = 2;
+                        } else {
+                            printf("[ERROR] type error \n");
+                            error = true;
+                        }
+                    }
+                     | arithmetic_expression MULTIPLY arithmetic_expression {
+                        if ($1.datatype == $3.datatype) {
+                            $$.datatype = $1.datatype;
+                        } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
+                            $$.datatype = 2;
+                        } else {
+                            printf("[ERROR] type error \n");
+                            error = true;
+                        }
+                    }
+                     | arithmetic_expression DIVIDE arithmetic_expression {
+                        if (($1.datatype == $3.datatype) || (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2))) {
+                            $$.datatype = 2;
+                        } else {
+                            printf("[ERROR] type error \n");
+                            error = true;
+                        }
+                    }
+                     | arithmetic_expression MODULO arithmetic_expression {
+                        if ($1.datatype == 1 && $3.datatype == 1) {
+                            $$.datatype = 1;
+                        } else {
+                            printf("[ERROR] type error \n");
+                            error = true;
+                        }
+                    }
+                     | OPEN_BRACE arithmetic_expression CLOSED_BRACE {
+                        $$.datatype = $2.datatype;
+                     }
+                     | primary_expression {
+                        $$.datatype = $1.datatype;
+                     }
                      ;
 
 relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expression
@@ -168,25 +209,33 @@ boolean_expression: expression BINARY_BOOL_OPERATOR expression
 
 primary_expression: identifier
                   | INTEGER_CONST {
-                    $$ = (int)$1;
+                    $$.datatype = 1;
+                    $$.ival = (int)$1.ival;
                   }
-                  | REAL_CONST
-                  | CHARACTER_CONSTANT
+                  | REAL_CONST {
+                    $$.datatype = 2;
+                    $$.dval = (float)$1.dval;
+                  }
+                  | CHARACTER_CONSTANT {
+                    $$.datatype = 3;
+                    $$.cval = (char)$1.cval;
+                  }
                   ;
 
 identifier: IDENTIFIER {
-    bool flag = true;
-    for (int i=0; i<current_size; i++) {
-        if (strcmp(symbolTable[i].name, $1.sval) == 0) {
-            flag = false;
-            break;
+        bool flag = true;
+        for (int i=0; i<current_size; i++) {
+            if (strcmp(symbolTable[i].name, $1.sval) == 0) {
+                flag = false;
+                break;
+            }
         }
+        if (flag) {
+            error = true;
+            printf("[ERROR] undeclared variable: %s\n", $1);
+        }
+        $$.datatype = $1.datatype;
     }
-    if (flag) {
-        error = true;
-        printf("[ERROR] undeclared variable: %s\n", $1);
-    }
-}
           | IDENTIFIER SQUARE_OPEN expression SQUARE_CLOSE
           ;
 

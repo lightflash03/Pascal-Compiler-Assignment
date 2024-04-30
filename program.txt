@@ -1,12 +1,13 @@
 program Example9;
 var
-  a: Integer;
-  d,e,a,f: real;
-  g,h,d,j: boolean;
-  k,g,l,m: char;
+  a,i: Integer;
+  d,e,f: real;
+  g,h,j: boolean;
+  k,l,m: char;
 
 begin
   i := 10;
+  d := i + 'c';
   if i > 10 then
   begin
     i := 10;
