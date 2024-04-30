@@ -18,9 +18,14 @@ typedef struct {
     } val;
 } Symbol;
 
+// typedef struct identifier_ {
+//     char *sval;
+//     bool declared;
+//     bool assigned;
+// } identifier_attributes;
+
 Symbol symbolTable[100];
 
-int current_type = 0;
 int current_size = 0;
 
 bool error = false;
@@ -33,14 +38,19 @@ bool error = false;
     int ival;
     float dval;
     char cval;
-    char *sval;
+    struct identifier_ {
+        char *sval;
+        bool declared;
+        bool assigned;
+    };
+    struct identifier_ identifier_attr;
     int datatype;
 }
 
 %token <ival> INTEGER_CONST
 %token <dval> REAL_CONST
 %token <cval> CHARACTER_CONSTANT
-%token <sval> IDENTIFIER
+%token <identifier_attr> IDENTIFIER
 %token <datatype> DATA_TYPE
 
 %type <dval> primary_expression
@@ -84,22 +94,22 @@ declaration_line
 multiple_identifiers
     : IDENTIFIER COMMA multiple_identifiers {
         for (int i=0; i<current_size; i++) {
-            if (strcmp(symbolTable[i].name, $1) == 0) {
-                printf("[ERROR] multiple declarations of a variable: %s\n", $1);
+            if (strcmp(symbolTable[i].name, $1.sval) == 0) {
+                printf("[ERROR] multiple declarations of a variable: %s\n", $1.sval);
                 error = true;
             }
         }
-        strcpy(symbolTable[current_size].name, $1);
+        strcpy(symbolTable[current_size].name, $1.sval);
         symbolTable[current_size++].datatype = 0;
     }
     | IDENTIFIER {
         for (int i=0; i<current_size; i++) {
-            if (strcmp(symbolTable[i].name, $1) == 0) {
-                printf("[ERROR] multiple declarations of a variable: %s\n", $1);
+            if (strcmp(symbolTable[i].name, $1.sval) == 0) {
+                printf("[ERROR] multiple declarations of a variable: %s\n", $1.sval);
                 error = true;
             }
         }
-        strcpy(symbolTable[current_size].name, $1);
+        strcpy(symbolTable[current_size].name, $1.sval);
         symbolTable[current_size++].datatype = 0;
     }
     ;
@@ -167,7 +177,7 @@ primary_expression: identifier
 identifier: IDENTIFIER {
     bool flag = true;
     for (int i=0; i<current_size; i++) {
-        if (strcmp(symbolTable[i].name, $1) == 0) {
+        if (strcmp(symbolTable[i].name, $1.sval) == 0) {
             flag = false;
             break;
         }

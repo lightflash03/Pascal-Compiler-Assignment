@@ -191,7 +191,7 @@
 
 [a-zA-Z][a-zA-Z0-9_]*   {
     // printf("Identifier\n");
-    yylval.sval = strdup(yytext);
+    yylval.identifier_attr.sval = strdup(yytext);
     return IDENTIFIER;
 }
 
