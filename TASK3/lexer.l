@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <stdbool.h>
 #include "y.tab.h"
 %}
 
@@ -28,6 +29,7 @@
 }
 
 "+" {
+    
     return ADD;
 }
 
@@ -74,6 +76,15 @@
 
 "integer"|"real"|"boolean"|"char" {
     // printf("data_type\n");
+    if (strcmp(strdup(yytext), "integer") == 0) {
+        yylval.datatype = 0;
+    } else if (strcmp(strdup(yytext), "real") == 0) {
+        yylval.datatype = 1;
+    } else if (strcmp(strdup(yytext), "boolean") == 0) {
+        yylval.datatype = 3;
+    } else if (strcmp(strdup(yytext), "char") == 0) {
+        yylval.datatype = 2;
+    }
     return DATA_TYPE;
 }
 
@@ -180,6 +191,7 @@
 
 [a-zA-Z][a-zA-Z0-9_]*   {
     // printf("Identifier\n");
+    yylval.sval = strdup(yytext);
     return IDENTIFIER;
 }
 

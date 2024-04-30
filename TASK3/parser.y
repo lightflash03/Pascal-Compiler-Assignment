@@ -2,13 +2,48 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 FILE *fptRead = NULL, *fptWrite = NULL;
 extern FILE *yyin;
 extern FILE *yyout;
+
+typedef struct {
+    char name[100];
+    int datatype;
+    union value {
+        int ival;
+        float dval;
+        char sval;
+    } val;
+} Symbol;
+
+Symbol symbolTable[100];
+
+int current_type = 0 ;
+int current_size = 0;
+
 %}
 
-%token CHARACTER_CONSTANT SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR PROGRAM DATA_TYPE VAR TO DOWNTO IF THEN ELSE WHILE FOR DO TOKEN_BEGIN END READ WRITE INTEGER_CONST STRING_CONSTANT REAL_CONST IDENTIFIER PUNCTUATOR
+%union {
+    // datatype, value, declared
+    bool bval;
+    int ival;
+    float dval;
+    char cval;
+    char *sval;
+    int datatype;
+}
+
+%token <ival> INTEGER_CONST
+%token <dval> REAL_CONST
+%token <cval> CHARACTER_CONSTANT
+%token <sval> IDENTIFIER
+%token <datatype> DATA_TYPE
+
+%type <dval> primary_expression
+
+%token SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR PROGRAM VAR TO DOWNTO IF THEN ELSE WHILE FOR DO TOKEN_BEGIN END READ WRITE STRING_CONSTANT PUNCTUATOR
 
 %left BINARY_BOOL_OPERATOR
 %left RELATIONAL_OPERATOR
@@ -34,13 +69,23 @@ declaration_list
 
 // Doesn't support the case of no declarations
 multiple_lines
-    : multiple_identifiers COLON DATA_TYPE SEMICOLON multiple_lines
-    | multiple_identifiers COLON DATA_TYPE SEMICOLON
+    : multiple_identifiers COLON DATA_TYPE SEMICOLON multiple_lines {
+        current_type = $3;
+    }
+    | multiple_identifiers COLON DATA_TYPE SEMICOLON {
+        current_type = $3;
+    }
     ;
 
 multiple_identifiers
-    : IDENTIFIER COMMA multiple_identifiers
-    | IDENTIFIER
+    : IDENTIFIER COMMA multiple_identifiers {
+        strcpy(symbolTable[current_size].name, $1);
+        symbolTable[current_size++].datatype = current_type;
+    }
+    | IDENTIFIER {
+        strcpy(symbolTable[current_size].name, $1);
+        symbolTable[current_size++].datatype = current_type;
+    }
     ;
 
 statements
@@ -96,7 +141,9 @@ boolean_expression: expression BINARY_BOOL_OPERATOR expression
                   ;
 
 primary_expression: identifier
-                  | INTEGER_CONST
+                  | INTEGER_CONST {
+                    $$ = (int)$1;
+                  }
                   | REAL_CONST
                   | CHARACTER_CONSTANT
                   ;
@@ -144,4 +191,11 @@ int main(int argc, char *argv[]) {
 
     // No error encountered
     printf("valid input\n");
+
+    printf(" name | type \n");
+
+    for (int i=0; i<current_size; i++) {
+        printf("%6s|%6d\n", symbolTable[i].name, symbolTable[i].datatype);
+    };
+
 }

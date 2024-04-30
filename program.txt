@@ -1,6 +1,9 @@
 program Example9;
 var
-  i: Integer;
+  i,a,b,c: Integer;
+  d,e,f: real;
+  g,h,j: boolean;
+
 begin
   i := 10;
   if i > 10 then
