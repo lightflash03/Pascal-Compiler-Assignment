@@ -139,6 +139,7 @@ loop
 
 expression: arithmetic_expression {
             $$.datatype = $1.datatype;
+            printf("Exprssn -> Arith: $1: %d $$: %d\n", $1.datatype, $$.datatype);
         }
           | relational_expression
           | boolean_expression
@@ -148,8 +149,10 @@ expression: arithmetic_expression {
 
 arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                         if ($1.datatype == $3.datatype) {
+                            printf("Arith ADD: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = $1.datatype;
                         } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
+                            printf("Arith ADD: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = 2;
                         } else {
                             printf("155: $1: %d $3: %d\n", $1.datatype, $3.datatype);
@@ -159,8 +162,10 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                     }
                      | arithmetic_expression SUBTRACT arithmetic_expression {
                         if ($1.datatype == $3.datatype) {
+                            printf("Arith SUB: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = $1.datatype;
                         } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
+                            printf("Arith SUB: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = 2;
                         } else {
                             printf("166: $1: %d $3: %d\n", $1.datatype, $3.datatype);
@@ -170,8 +175,10 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                     }
                      | arithmetic_expression MULTIPLY arithmetic_expression {
                         if ($1.datatype == $3.datatype) {
+                            printf("Arith MULT: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = $1.datatype;
                         } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
+                            printf("Arith MULT: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = 2;
                         } else {
                             printf("177: $1: %d $3: %d\n", $1.datatype, $3.datatype);
@@ -181,6 +188,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                     }
                      | arithmetic_expression DIVIDE arithmetic_expression {
                         if (($1.datatype == $3.datatype) || (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2))) {
+                            printf("Arith DIV: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = 2;
                         } else {
                             printf("186: $1: %d $3: %d\n", $1.datatype, $3.datatype);
@@ -190,6 +198,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                     }
                      | arithmetic_expression MODULO arithmetic_expression {
                         if ($1.datatype == 1 && $3.datatype == 1) {
+                            printf("Arith MOD: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = 1;
                         } else {
                             printf("195: $1: %d $3: %d\n", $1.datatype, $3.datatype);
@@ -231,6 +240,7 @@ identifier: IDENTIFIER {
         bool flag = true;
         for (int i=0; i<current_size; i++) {
             if (strcmp(symbolTable[i].name, $1.sval) == 0) {
+                $1.datatype = symbolTable[i].datatype;
                 flag = false;
                 break;
             }

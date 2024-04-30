@@ -7,7 +7,7 @@ yacc -d parser.y
 flex lexer.l
 
 # Compile y.tab.c and lex.yy.c
-gcc y.tab.c lex.yy.c -w -ly -o parser
+gcc y.tab.c lex.yy.c -w -ll -o parser
 
 # Run the parser
 ./parser ../program.txt
