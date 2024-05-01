@@ -137,8 +137,8 @@ assignment
                 }
             }
             if (!flag) {
-            printf("[ERROR] type error \n");
-            error = true;
+                printf("[ERROR] type error \n");
+                error = true;
             }
         } else {
             for (int i=0; i<current_size; i++) {
@@ -167,10 +167,18 @@ expression: arithmetic_expression {
             $$.datatype = $1.datatype;
             // printf("Exprssn -> Arith: $1: %d $$: %d\n", $1.datatype, $$.datatype);
         }
-          | relational_expression
-          | boolean_expression
-          | OPEN_BRACE boolean_expression CLOSED_BRACE
-          | OPEN_BRACE relational_expression CLOSED_BRACE
+          | relational_expression {
+            $$.datatype = $1.datatype;
+          }
+          | boolean_expression {
+            $$.datatype = $1.datatype;
+          }
+          | OPEN_BRACE boolean_expression CLOSED_BRACE {
+            $$.datatype = $2.datatype;
+          }
+          | OPEN_BRACE relational_expression CLOSED_BRACE {
+            $$.datatype = $2.datatype;
+          }
           ;
 
 arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
@@ -240,7 +248,13 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                      }
                      ;
 
-relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expression
+relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expression {
+                        $$.datatype = 3;
+                        if (!($1.datatype == 1 || $1.datatype == 2) && ($3.datatype == 1 || $3.datatype == 2)) {
+                            printf("[ERROR] wrong type of operand(s) in a relational expression \n");
+                            error = true;
+                        }
+                    }
                      ;
 
 boolean_expression: expression BINARY_BOOL_OPERATOR expression
@@ -349,19 +363,19 @@ int main(int argc, char *argv[]) {
             if (symbolTable[i].assigned)
                 printf("| %8s |   %4s   | %9.4f |\n", symbolTable[i].name, "real", symbolTable[i].val.dval);
             else 
-                printf("| %8s |   %4s   |     %1s     |\n", symbolTable[i].name, "int", "-");
+                printf("| %8s |   %4s   |     %1s     |\n", symbolTable[i].name, "real", "-");
         }
         else if (symbolTable[i].datatype == 3) {
             if (symbolTable[i].assigned)
                 printf("| %8s |   %4s   | %9d |\n", symbolTable[i].name, "bool", symbolTable[i].val.ival);
             else 
-                printf("| %8s |   %4s   |     %1s     |\n", symbolTable[i].name, "int", "-");
+                printf("| %8s |   %4s   |     %1s     |\n", symbolTable[i].name, "bool", "-");
         }
         else if (symbolTable[i].datatype == 4) {
             if (symbolTable[i].assigned)
                 printf("| %8s |   %4s   | %9s |\n", symbolTable[i].name, "char", symbolTable[i].val.sval);
             else 
-                printf("| %8s |   %4s   |     %1s     |\n", symbolTable[i].name, "int", "-");
+                printf("| %8s |   %4s   |     %1s     |\n", symbolTable[i].name, "char", "-");
         }
     };
 
