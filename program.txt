@@ -1,11 +1,13 @@
 program NumberOfDigits;
 var
-  number, count: Integer;
+  number, fPra: Integer;
+  count, checkFloat: Real;
+  pressF: Char;
+  CC_killed: boolean;
   numbers: array[3..10] of Real;
 begin
-  number := 4;
-  if (numberss[20] > 3) then
-  begin
-    WRITE(number);
-  end;
+  number := 9 + 13;
+  checkFloat := 15;
+  number := 16 + number * number - 5;
+  read(number);
 end.
