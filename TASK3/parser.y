@@ -250,15 +250,30 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
 
 relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expression {
                         $$.datatype = 3;
-                        if (!($1.datatype == 1 || $1.datatype == 2) && ($3.datatype == 1 || $3.datatype == 2)) {
+                        // printf("$1: %d, $3: %d \n", $1.datatype, $3.datatype);
+                        if (!(($1.datatype == 1 || $1.datatype == 2) && ($3.datatype == 1 || $3.datatype == 2))) {
                             printf("[ERROR] wrong type of operand(s) in a relational expression \n");
                             error = true;
                         }
                     }
                      ;
 
-boolean_expression: expression BINARY_BOOL_OPERATOR expression
-                  | UNARY_BOOL_OPERATOR expression
+boolean_expression: expression BINARY_BOOL_OPERATOR expression {
+                        $$.datatype = 3;
+                        // printf("$1: %d, $3: %d \n", $1.datatype, $3.datatype);
+                        if (!(($1.datatype == 3) && ($3.datatype == 3))) {
+                            printf("[ERROR] wrong type of operand(s) in a boolean expression \n");
+                            error = true;
+                        }
+                    }
+                  | UNARY_BOOL_OPERATOR expression {
+                        $$.datatype = 3;
+                        // printf("$1: %d \n", $1.datatype);
+                        if (!($2.datatype == 3)) {
+                            printf("[ERROR] wrong type of operand in a boolean expression \n");
+                            error = true;
+                        }
+                    }
                   ;
 
 primary_expression: identifier {

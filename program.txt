@@ -6,8 +6,7 @@ var
   k,l,m: char;
 
 begin
-  k := 'c';
-  d := 5.4;
-  a := 3;
-  e := a + d;
+  g := (3 > 4);
+  h := not ( not (4 < 5) and (3 < 4));
+  READ (a);
 end.
