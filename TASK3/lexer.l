@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "y.tab.h"
+
+int start_array = 0, end_array = 0;
 %}
 
 %x START_QUOTE 
@@ -96,6 +98,8 @@
 
 <FIRST_NUMBER>[0-9]+ {
     BEGIN ELIPSIS;
+    start_array = atoi(yytext);
+    // return FIRST_NUMBER;
 }
 
 <ELIPSIS>".." {
@@ -104,6 +108,8 @@
 
 <SECOND_NUMBER>[0-9]+ {
     BEGIN ARRAY_BRACKET_CLOSE;
+    end_array = atoi(yytext);
+    // return SECOND_NUMBER;
 }
 
 <ARRAY_BRACKET_CLOSE>"]" {
@@ -116,7 +122,18 @@
 
 <ARRAY_TYPE>"integer"|"real"|"boolean"|"char" {
     BEGIN INITIAL;
-    return DATA_TYPE;
+    if (strcmp(strdup(yytext), "integer") == 0) {
+        yylval.arr_attr.datatype = 1;
+    } else if (strcmp(strdup(yytext), "real") == 0) {
+        yylval.arr_attr.datatype = 2;
+    } else if (strcmp(strdup(yytext), "boolean") == 0) {
+        yylval.arr_attr.datatype = 3;
+    } else if (strcmp(strdup(yytext), "char") == 0) {
+        yylval.arr_attr.datatype = 4;
+    }
+    yylval.arr_attr.first_ival = start_array;
+    yylval.arr_attr.second_ival = end_array;
+    return ARRAY_DATA_TYPE;
 }
 
 "var" {

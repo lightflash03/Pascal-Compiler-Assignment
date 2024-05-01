@@ -1,22 +1,11 @@
 program NumberOfDigits;
 var
   number, count: Integer;
+  numbers: array[3..10] of Real;
 begin
-  write("Enter a number:");
-  read(number);
-  count := 0;
-  while number <> 0 do
+  number := 4;
+  if (numberss[20] > 3) then
   begin
-    if number <> 0 then
-    begin
-      count:=count+1;
-    end
-    else 
-    begin
-     count :=count;
-    end; 
-    number := number - 1;
+    WRITE(number);
   end;
-  write("The number of digits is: ");
-  write(count);
 end.

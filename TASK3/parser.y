@@ -3,6 +3,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <math.h>
+
 
 FILE *fptRead = NULL, *fptWrite = NULL;
 extern FILE *yyin;
@@ -39,9 +42,23 @@ bool error = false;
         bool assigned;
     };
     struct attributes attr;
+
+    struct arr_attributes {
+        int datatype;
+        bool bval;
+        int first_ival;
+        int second_ival;
+        float dval;
+        char cval;
+        char *sval;
+        bool declared;
+        bool assigned;
+    };
+    struct arr_attributes arr_attr;
 }
 
-%token <attr> INTEGER_CONST REAL_CONST CHARACTER_CONSTANT IDENTIFIER DATA_TYPE
+%token <attr> INTEGER_CONST REAL_CONST CHARACTER_CONSTANT IDENTIFIER DATA_TYPE 
+%token <arr_attr> ARRAY_DATA_TYPE
 
 %type <attr> expression primary_expression arithmetic_expression relational_expression boolean_expression identifier
 
@@ -74,12 +91,43 @@ multiple_lines
 declaration_line
     : multiple_identifiers COLON DATA_TYPE SEMICOLON {
         for (int i=0; i<current_size; i++) {
-            // if(symbolTable[i].datatype == 0)
             if (!(symbolTable[i].declared)) {
                 symbolTable[i].declared = true;
                 symbolTable[i].assigned = false;
                 symbolTable[i].datatype = $3.datatype;
             }
+        }
+    }
+    | multiple_identifiers COLON ARRAY_DATA_TYPE SEMICOLON {
+        char vars[100][100];
+        int st = 0, fr;
+        bool flag = false;
+        for (int i=0; i<current_size; i++) {
+            if (!(symbolTable[i].declared)) {
+                symbolTable[i].declared = true;
+                symbolTable[i].assigned = false;
+                symbolTable[i].datatype = $3.datatype;
+                strcpy(vars[st++], symbolTable[i].name);
+                if (!flag) {
+                    flag = true;
+                    fr = i;
+                }
+            }
+        }
+        int before_size = current_size;
+        current_size = fr;
+        int j = 0;
+        for (;fr<before_size; fr++) {
+            for (int i=$3.first_ival; i<=$3.second_ival; i++) {
+                char temp[100];
+                sprintf(temp, "%s[%d]", vars[j], i);
+                strcpy(symbolTable[current_size].name, temp);
+                symbolTable[current_size].declared = true;
+                symbolTable[current_size].assigned = false;
+                symbolTable[current_size].datatype = $3.datatype;
+                current_size++;
+            }
+            j++;
         }
     }
     ;
@@ -93,7 +141,6 @@ multiple_identifiers
             }
         }
         strcpy(symbolTable[current_size].name, $1.sval);
-        // symbolTable[current_size++].datatype = 0;
         symbolTable[current_size++].declared = false;
         $1.assigned = false;
     }
@@ -105,7 +152,6 @@ multiple_identifiers
             }
         }
         strcpy(symbolTable[current_size].name, $1.sval);
-        // symbolTable[current_size++].datatype = 0;
         symbolTable[current_size++].declared = false;
         $1.assigned = false;
     }
@@ -340,24 +386,44 @@ primary_expression: identifier {
                   ;
 
 identifier: IDENTIFIER {
-        bool flag = true;
-        for (int i=0; i<current_size; i++) {
-            if (strcmp(symbolTable[i].name, $1.sval) == 0) {
-                $1.datatype = symbolTable[i].datatype;
-                flag = false;
-                if ($$.assigned) {
-                    symbolTable[i].assigned = true;
+                bool flag = true;
+                for (int i=0; i<current_size; i++) {
+                    if (strcmp(symbolTable[i].name, $1.sval) == 0) {
+                        $1.datatype = symbolTable[i].datatype;
+                        flag = false;
+                        if ($$.assigned) {
+                            symbolTable[i].assigned = true;
+                        }
+                        break;
+                    }
                 }
-                break;
-            }
-        }
-        if (flag) {
-            error = true;
-            printf("[ERROR] undeclared variable: %s\n", $1);
-        }
-        $$.datatype = $1.datatype;
-    }
-          | IDENTIFIER SQUARE_OPEN expression SQUARE_CLOSE
+                if (flag) {
+                    error = true;
+                    printf("[ERROR] undeclared variable: %s\n", $1.sval);
+                }
+                $$.datatype = $1.datatype;
+          }
+          | IDENTIFIER SQUARE_OPEN expression SQUARE_CLOSE {
+                char temp[100];
+                sprintf(temp, "%s[", $1.sval);
+                bool flag = true;
+                for (int i=0; i<current_size; i++) {
+                    if (strncmp(symbolTable[i].name, temp, strlen(temp)) == 0) {
+                        $1.datatype = symbolTable[i].datatype;
+                        flag = false;
+                        break;
+                    }
+                }
+                if (flag) {
+                    error = true;
+                    printf("[ERROR] undeclared variable: %s\n", $1.sval);
+                }
+                if (!($3.datatype == 1)) {
+                    printf("[ERROR] wrong type of array index \n");
+                    error = true;
+                }
+                $$.datatype = $1.datatype;
+          }
           ;
 
 output
@@ -403,35 +469,35 @@ int main(int argc, char *argv[]) {
     }
 
     printf("Symbol Table\n");
-    printf("+---------------------------------+\n| Variable |   Type   |   Value   |\n|---------------------------------|\n");
+    printf("+-----------------------------------------+\n|     Variable     |   Type   |   Value   |\n|-----------------------------------------|\n");
 
     for (int i=0; i<current_size; i++) {
         if (symbolTable[i].datatype == 1) {
             if (symbolTable[i].assigned)
-                printf("| %8s |   %4s   | %9d |\n", symbolTable[i].name, "int", symbolTable[i].val.ival);
+                printf("| %16s |   %4s   | %9d |\n", symbolTable[i].name, "int", symbolTable[i].val.ival);
             else 
-                printf("| %8s |   %4s   |     %1s     |\n", symbolTable[i].name, "int", "-");
+                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "int", "-");
         }
         else if (symbolTable[i].datatype == 2) {
             if (symbolTable[i].assigned)
-                printf("| %8s |   %4s   | %9.4f |\n", symbolTable[i].name, "real", symbolTable[i].val.dval);
+                printf("| %16s |   %4s   | %9.4f |\n", symbolTable[i].name, "real", symbolTable[i].val.dval);
             else 
-                printf("| %8s |   %4s   |     %1s     |\n", symbolTable[i].name, "real", "-");
+                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "real", "-");
         }
         else if (symbolTable[i].datatype == 3) {
             if (symbolTable[i].assigned)
-                printf("| %8s |   %4s   | %9d |\n", symbolTable[i].name, "bool", symbolTable[i].val.ival);
+                printf("| %16s |   %4s   | %9d |\n", symbolTable[i].name, "bool", symbolTable[i].val.ival);
             else 
-                printf("| %8s |   %4s   |     %1s     |\n", symbolTable[i].name, "bool", "-");
+                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "bool", "-");
         }
         else if (symbolTable[i].datatype == 4) {
             if (symbolTable[i].assigned)
-                printf("| %8s |   %4s   | %9s |\n", symbolTable[i].name, "char", symbolTable[i].val.sval);
+                printf("| %16s |   %4s   | %9s |\n", symbolTable[i].name, "char", symbolTable[i].val.sval);
             else 
-                printf("| %8s |   %4s   |     %1s     |\n", symbolTable[i].name, "char", "-");
+                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "char", "-");
         }
     };
 
-    printf("+---------------------------------+\n");
+    printf("+-----------------------------------------+\n");
 
 }
