@@ -1,12 +1,18 @@
 program Example9;
 var
-  a,i: Integer;
-  d,e,f: real;
-  g,h,j: boolean;
-  k,l,m: char;
-
+  i, a: Integer;
 begin
-  g := (3 > 4);
-  h := not ( not (4 < 5) and (3 < 4));
-  READ (a);
+  i := 10;
+  a := 2;
+  if ((i > 10) and (not(a < 3))) then
+  begin
+    i := 10;
+    i := i - 1;
+    write(i);
+  end
+  else
+  begin
+    i := 20;
+    write(i);
+  end;
 end.

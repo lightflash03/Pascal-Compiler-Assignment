@@ -153,8 +153,18 @@ assignment
     ;
 
 conditional
-    : IF expression THEN TOKEN_BEGIN statements END 
-    | IF expression THEN TOKEN_BEGIN statements END ELSE TOKEN_BEGIN statements END 
+    : IF expression THEN TOKEN_BEGIN statements END {
+        if (!($2.datatype == 3)) {
+            printf("[ERROR] wrong type of condition in a conditional expression \n");
+            error = true;
+        }
+    }
+    | IF expression THEN TOKEN_BEGIN statements END ELSE TOKEN_BEGIN statements END {
+        if (!($2.datatype == 3)) {
+            printf("[ERROR] wrong type of condition in a conditional expression \n");
+            error = true;
+        }
+    }
     ;
 
 loop
@@ -172,12 +182,6 @@ expression: arithmetic_expression {
           }
           | boolean_expression {
             $$.datatype = $1.datatype;
-          }
-          | OPEN_BRACE boolean_expression CLOSED_BRACE {
-            $$.datatype = $2.datatype;
-          }
-          | OPEN_BRACE relational_expression CLOSED_BRACE {
-            $$.datatype = $2.datatype;
           }
           ;
 
@@ -256,6 +260,9 @@ relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expr
                             error = true;
                         }
                     }
+                     | OPEN_BRACE relational_expression CLOSED_BRACE {
+                        $$.datatype = $2.datatype;
+                     }
                      ;
 
 boolean_expression: expression BINARY_BOOL_OPERATOR expression {
@@ -274,6 +281,9 @@ boolean_expression: expression BINARY_BOOL_OPERATOR expression {
                             error = true;
                         }
                     }
+                  | OPEN_BRACE boolean_expression CLOSED_BRACE {
+                        $$.datatype = $2.datatype;
+                     }
                   ;
 
 primary_expression: identifier {
