@@ -233,12 +233,12 @@ char full_string[150] = "";
 }
 
 <START_QUOTE>[^\"]* {
-    strcat(full_string, yytext);
+    strcpy(full_string, yytext);
     BEGIN ANY_STRING;
 }
 
 <ANY_STRING>\" {
-    yylval.string_const = strdup(full_string);
+    strcpy(yylval.string_const, full_string);
     BEGIN INITIAL;
     return STRING_CONSTANT; 
 }

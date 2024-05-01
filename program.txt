@@ -6,8 +6,12 @@ var
   CC_killed: boolean;
   numbers: array[3..10] of Real;
 begin
-  number := 9 + 13;
-  checkFloat := 15;
-  number := 16 + number * number - 5;
-  read(number);
+  number := 1;
+  fPra := 3;
+  count := 4.5;
+  write(number);
+  write("Bitch");
+  write(number, fPra, count);
+  read(count);
+  write(count);
 end.

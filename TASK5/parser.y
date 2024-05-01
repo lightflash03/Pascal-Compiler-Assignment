@@ -57,7 +57,7 @@ bool error = false;
     };
     struct arr_attributes arr_attr;
 
-    char *string_const;
+    char string_const[100];
 }
 
 %token <attr> INTEGER_CONST REAL_CONST CHARACTER_CONSTANT IDENTIFIER DATA_TYPE 
@@ -177,11 +177,38 @@ statement
         for (int i=0; i<current_size; i++) {
             if (strcmp(symbolTable[i].name, $3.sval) == 0) {
                 symbolTable[i].assigned = true;
+                
+                switch(symbolTable[i].datatype) {
+                    case 1:
+                        scanf("%d", &symbolTable[i].val.ival);
+                        $3.datatype = 1;
+                        $3.ival = symbolTable[i].val.ival;
+                        break;
+                    case 2:
+                        scanf("%f", &symbolTable[i].val.dval);
+                        $3.datatype = 2;
+                        $3.dval = symbolTable[i].val.dval;
+                        break;
+                    case 3:
+                        scanf("%d", &symbolTable[i].val.bval);
+                        $3.datatype = 3;
+                        $3.bval = symbolTable[i].val.bval;
+                        break;
+                    case 4:
+                        scanf("%c", &symbolTable[i].val.cval);
+                        $3.datatype = 4;
+                        $3.cval = symbolTable[i].val.cval;
+                        break;
+                }
+
                 break;
             }
         }
     }
-    | WRITE OPEN_BRACE output CLOSED_BRACE
+    | WRITE OPEN_BRACE output CLOSED_BRACE {
+        // printf("In write statement\n");
+        printf("%s\n", $3);
+    }
     ;
 
 assignment
@@ -414,12 +441,23 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                         }
                     }
                      | arithmetic_expression DIVIDE arithmetic_expression {
-                        if (($1.datatype == $3.datatype) || (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2))) {
+                        if ($1.datatype == 1 && $3.datatype == 1) {
                             $$.datatype = 2;
-
-                            /* Yet to assign values here */
-
-                        } else {
+                            $$.dval = $1.ival / (double)$3.ival;
+                        } 
+                        else if ($1.datatype == 2 && $3.datatype == 2) {
+                            $$.datatype = 2;
+                            $$.dval = $1.dval / $3.dval;
+                        }
+                        else if ($1.datatype == 1 && $3.datatype == 2) {
+                            $$.datatype = 2;
+                            $$.dval = (double)$1.ival / $3.dval;
+                        }
+                        else if ($1.datatype == 2 && $3.datatype == 1) {
+                            $$.datatype = 2;
+                            $$.dval = $1.dval / (double)$3.ival;
+                        }
+                        else {
                             printf("[ERROR] type error \n");
                             error = true;
                         }
@@ -427,6 +465,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                      | arithmetic_expression MODULO arithmetic_expression {
                         if ($1.datatype == 1 && $3.datatype == 1) {
                             $$.datatype = 1;
+                            $$.ival = $1.ival % $3.ival;
                         } else {
                             printf("[ERROR] type error \n");
                             error = true;
@@ -616,34 +655,53 @@ identifier: IDENTIFIER {
           ;
 
 output
-    : output_list 
-    // {
-    //     printf("%s", $1);
-    // }
-    | STRING_CONSTANT
+    : output_list {
+        strcpy($$, $1);
+    }
+    | STRING_CONSTANT {
+        strcpy($$, $1);
+    }
     ;
 
 output_list
-    : expression  {
-        printf("$1: %d\n", $1.ival);
+    : expression {
+         switch($1.datatype) {
+            case 1:
+                sprintf($$, "%d", $1.ival);
+                break;
+            case 2:
+                sprintf($$, "%f", $1.dval);
+                break;
+            case 3:
+                sprintf($$, "%d", $1.bval);
+                break;
+            case 4:
+                sprintf($$, "%c", $1.cval);
+                break;
+        }
     }
-    // {
-        //  switch($1.datatype) {
-        //     case 1:
-        //         sprintf($$, "%d", $1.ival);
-        //         break;
-        //     case 2:
-        //         sprintf($$, "%f", $1.dval);
-        //         break;
-        //     case 3:
-        //         sprintf($$, "%d", $1.bval);
-        //         break;
-        //     case 4:
-        //         sprintf($$, "%c", $1.cval);
-        //         break;
-        // }
-    // }
-    | output_list COMMA expression 
+    | output_list COMMA expression  {
+        char total_output[200];
+        char output_temp[100];
+        // printf("output_list: %s --- output_list: %s\n", $$, $1);
+        strcpy(total_output, $1);
+        switch($3.datatype) {
+            case 1:
+                sprintf(output_temp, ", %d", $3.ival);
+                break;
+            case 2:
+                sprintf(output_temp, ", %f", $3.dval);
+                break;
+            case 3:
+                sprintf(output_temp, ", %d", $3.bval);
+                break;
+            case 4:
+                sprintf(output_temp, ", %c", $3.cval);
+                break;
+        }
+        strcat(total_output, output_temp);
+        strcpy($$, total_output);
+    }
     ;
 
 
