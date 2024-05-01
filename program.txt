@@ -9,9 +9,11 @@ begin
   number := 1;
   fPra := 3;
   count := 4.5;
+  numbers[5] := 10.0;
   write(number);
   write("Bitch");
   write(number, fPra, count);
   read(count);
   write(count);
+  write(numbers[5]);
 end.

@@ -633,6 +633,26 @@ identifier: IDENTIFIER {
                 }
                 $$.datatype = $1.datatype;
 
+                sprintf(temp, "%s[%d]", $1.sval, $3.ival);
+                for (int i=0; i<current_size; i++) {
+                    if (strcmp(symbolTable[i].name, temp) == 0) {
+                        switch(symbolTable[i].datatype) {
+                            case 1:
+                                symbolTable[i].val.ival = $1.ival;
+                                break;
+                            case 2:
+                                symbolTable[i].val.dval = $1.dval;
+                                break;
+                            case 3:
+                                symbolTable[i].val.bval = $1.bval;
+                                break;
+                            case 4:
+                                symbolTable[i].val.cval = $1.cval;
+                                break;
+                        }
+                    }
+                }
+
                  /* Assign Check Data Type */
                 
                 // switch($1.datatype) {
@@ -683,7 +703,6 @@ output_list
     | output_list COMMA expression  {
         char total_output[200];
         char output_temp[100];
-        // printf("output_list: %s --- output_list: %s\n", $$, $1);
         strcpy(total_output, $1);
         switch($3.datatype) {
             case 1:
