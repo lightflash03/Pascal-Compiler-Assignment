@@ -1,18 +1,22 @@
-program Example9;
+program NumberOfDigits;
 var
-  i, a: Integer;
+  number, count: Integer;
 begin
-  i := 10;
-  a := 2;
-  if ((i > 10) and (not(a < 3))) then
+  write("Enter a number:");
+  read(number);
+  count := 0;
+  while number <> 0 do
   begin
-    i := 10;
-    i := i - 1;
-    write(i);
-  end
-  else
-  begin
-    i := 20;
-    write(i);
+    if number <> 0 then
+    begin
+      count:=count+1;
+    end
+    else 
+    begin
+     count :=count;
+    end; 
+    number := number - 1;
   end;
+  write("The number of digits is: ");
+  write(count);
 end.

@@ -121,7 +121,14 @@ statement
     : assignment
     | conditional
     | loop
-    | READ OPEN_BRACE identifier CLOSED_BRACE
+    | READ OPEN_BRACE identifier CLOSED_BRACE {
+        for (int i=0; i<current_size; i++) {
+            if (strcmp(symbolTable[i].name, $3.sval) == 0) {
+                symbolTable[i].assigned = true;
+                break;
+            }
+        }
+    }
     | WRITE OPEN_BRACE output CLOSED_BRACE
     ;
 
@@ -168,15 +175,36 @@ conditional
     ;
 
 loop
-    : WHILE expression DO TOKEN_BEGIN statements END 
-    | FOR identifier ASSIGN expression DOWNTO expression DO TOKEN_BEGIN statements END
-    | FOR identifier ASSIGN expression TO expression DO TOKEN_BEGIN statements END 
+    : WHILE expression DO TOKEN_BEGIN statements END {
+        if (!($2.datatype == 3)) {
+            printf("[ERROR] wrong type of condition in a while loop \n");
+            error = true;
+        }
+    }
+    | FOR identifier ASSIGN expression DOWNTO expression DO TOKEN_BEGIN statements END {
+        if (!($4.datatype == 1 && $6.datatype == 1)) {
+            printf("[ERROR] wrong type of expression in a for loop \n");
+            error = true;
+        } else if (!($2.datatype == 1)) {
+            printf("[ERROR] wrong type of variable in a for loop \n");
+            error = true;
+        }
+    }
+    | FOR identifier ASSIGN expression TO expression DO TOKEN_BEGIN statements END {
+        if (!($4.datatype == 1 && $6.datatype == 1)) {
+            printf("[ERROR] wrong type of expression in a for loop \n");
+            error = true;
+        } else if (!($2.datatype == 1)) {
+            printf("[ERROR] wrong type of variable in a for loop \n");
+            error = true;
+        }
+    }
     ;
 
 expression: arithmetic_expression {
             $$.datatype = $1.datatype;
             // printf("Exprssn -> Arith: $1: %d $$: %d\n", $1.datatype, $$.datatype);
-        }
+          }
           | relational_expression {
             $$.datatype = $1.datatype;
           }
