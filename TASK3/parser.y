@@ -129,8 +129,17 @@ assignment
     : identifier ASSIGN expression {
         if (!($1.datatype == $3.datatype || ($1.datatype == 2 && $3.datatype == 1))) {
             // printf("122: $1: %d $3: %d\n", $1.datatype, $3.datatype);
+            bool flag = true;
+            for (int i=0; i<current_size; i++) {
+                if (strcmp(symbolTable[i].name, $1.sval) == 0) {
+                    flag = false;
+                    break;
+                }
+            }
+            if (!flag) {
             printf("[ERROR] type error \n");
             error = true;
+            }
         } else {
             for (int i=0; i<current_size; i++) {
                 if (strcmp(symbolTable[i].name, $1.sval) == 0) {
