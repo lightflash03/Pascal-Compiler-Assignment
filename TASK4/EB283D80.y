@@ -573,27 +573,6 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                      | primary_expression {
                         $$.datatype = $1.datatype;
                         strcpy($$.sval, $1.sval);
-
-                        // switch($1.datatype) {
-                        //     case 1:
-                        //         $$.ival = $1.ival;
-                        //         break;
-                        //     case 2:
-                        //         $$.dval = $1.dval;
-                        //         break;
-                        //     case 3:
-                        //         $$.bval = $1.bval;
-                        //         break;
-                        //     case 4:
-                        //         $$.cval = $1.cval;
-                        //         break;
-                        // }
-
-                        // char c[50]; 
-                        // strcpy(c, $1.sval);
-                        // push(c);
-
-                        intoArray = false;
                      }
                      ;
 
@@ -730,26 +709,7 @@ boolean_expression: expression BINARY_BOOL_OPERATOR expression {
                   ;
 
 primary_expression: identifier {
-                    
-                    // if(!error) {
-                    //     switch($1.datatype) {
-                    //         case 1:
-                    //             $$.ival = $1.ival;
-                    //             break;
-                    //         case 2:
-                    //             $$.dval = $1.dval;
-                    //             break;
-                    //         case 3:
-                    //             $$.bval = $1.bval;
-                    //             break;
-                    //         case 4:
-                    //             $$.cval = $1.cval;
-                    //             break;
-                    //     }
-                    // }
-
                     strcpy($$.sval, $1.sval);
-
                   }
                   | INTEGER_CONST {
                     $$.datatype = 1;
@@ -824,24 +784,6 @@ identifier: IDENTIFIER {
                 strcpy(c, $1.sval);
                 push(c);
 
-                /* Assign Check Data Type */
-                
-                // switch($1.datatype) {
-                //     case 1:
-                //         $$.ival = $1.ival;
-                //         break;
-                //     case 2:
-                //         $$.dval = $1.dval;
-                //         break;
-                //     case 3:
-                //         $$.bval = $1.bval;
-                //         break;
-                //     case 4:
-                //         $$.cval = $1.cval;
-                //         break;
-                // }
-
-                /* Assign Check Data Type code ends here */
           }
           | IDENTIFIER SQUARE_OPEN expression SQUARE_CLOSE {
 
@@ -868,55 +810,36 @@ identifier: IDENTIFIER {
                 }
                 $$.datatype = $1.datatype;
 
-                // char onlyName[100];
-                // strncpy(onlyName, temp, strlen(temp)-1);
-                // printf("onlyName: %s\n", onlyName);
-
                 sprintf(temp, "%s[%d]", $1.sval, $3.ival);
-                // for (int i=0; i<current_size; i++) {
-                //     if (strcmp(symbolTable[i].name, temp) == 0) {
-                //         switch(symbolTable[i].datatype) {
-                //             case 1:
-                //                 $$.ival = symbolTable[i].val.ival;
-                //                 break;
-                //             case 2:
-                //                 $$.dval = symbolTable[i].val.dval;
-                //                 break;
-                //             case 3:
-                //                 $$.bval = symbolTable[i].val.bval;
-                //                 break;
-                //             case 4:
-                //                 $$.cval = symbolTable[i].val.cval;
-                //                 break;
-                //         }
-                //     }
-                // }
+
+                printf("t%d = &%s\n", temp_char++, $1.sval);
+
+                switch ($3.datatype) {
+                    case 1:
+                        printf("t%d = 4 * (%s)\n", temp_char++, $3.sval);
+                        printf("t%d = t%d + t%d\n", temp_char-2, temp_char-1, $3.ival);
+                        break;
+                    case 2:
+                        printf("t%d = 8 * (%s)\n", temp_char++, $3.sval);
+                        printf("t%d = t%d + t%d\n", temp_char-2, temp_char-1, $3.ival);
+                        break;
+                    case 3:
+                        printf("t%d = 1 * (%s)\n", temp_char++, $3.sval);
+                        printf("t%d = t%d + t%d\n", temp_char-2, temp_char-1, $3.ival);
+                        break;
+                    case 4:
+                        printf("t%d = 1 * (%s)\n", temp_char++, $3.sval);
+                        printf("t%d = t%d + t%d\n", temp_char-2, temp_char-1, $3.ival);
+                        break;
+                }
+                
                 
                 strcpy($$.sval, temp);
 
-                char c[50]; 
-                strcpy(c, $$.sval);
-                push(c);
-                // printf("%s\n", $$.sval);
-
-                 /* Assign Check Data Type */
+                // char c[50]; 
+                // strcpy(c, $$.sval);
+                // push(c);
                 
-                // switch($1.datatype) {
-                //     case 1:
-                //         $$.ival = $1.ival;
-                //         break;
-                //     case 2:
-                //         $$.dval = $1.dval;
-                //         break;
-                //     case 3:
-                //         $$.bval = $1.bval;
-                //         break;
-                //     case 4:
-                //         $$.cval = $1.cval;
-                //         break;
-                // }
-
-                /* Assign Check Data Type code ends here */
           }
           ;
 
