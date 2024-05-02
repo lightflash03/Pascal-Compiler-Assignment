@@ -1,10 +1,15 @@
-program NumberOfDigits;
+program MaxValueArray;
 var
-  d: array[1..5] of integer;
-  c,e: integer;
+  numbers: array[1..10] of Integer;
+  i, j, maxValue: Integer;
+  k: rEAL;
 begin
-  for c := 5 to 10 do
+  j := 8;
+  if j = 8 then
   begin
-   WRITE(c * 2);
+    j := 9;
   end;
+  k := 8 + 762 + 863 + 78.5 + j;
+  k := 3 + k / 8 * 15;
+  i := j % 8;
 end.

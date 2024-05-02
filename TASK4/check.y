@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+bool if_flag = false; 
 
 FILE *fptRead = NULL, *fptWrite = NULL;
 extern FILE *yyin;
@@ -31,6 +32,49 @@ bool error = false;
 
 bool if_condition = false;
 
+int loop_Variable = 0;
+
+int count=0;
+int qind=0;
+int tos=-1;
+int temp_char=0;
+struct quadruple{
+    char operator[5];
+    char operand1[10];
+    char operand2[10];
+    char result[10];
+} quad[25];
+
+struct stack{
+    char c[10]; 
+} stk[25];
+
+void addQuadruple(char op1[], char op[], char op2[], char result[]) {
+    strcpy (quad[qind].operator, op);
+    strcpy (quad[qind].operand1, op1);
+    strcpy (quad[qind].operand2, op2);
+    strcpy (quad[qind].result, result);
+    qind++;
+}
+
+void display_Quad() {
+    printf ("%s ", quad[qind-1].result);
+    printf("= ");
+    printf ("%s " , quad[qind-1].operand1);
+    printf ("%s ", quad[qind-1].operator);
+    printf ("%s \n", quad[qind-1].operand2);
+}
+
+void push(char *c){
+    strcpy(stk[++tos].c, c);
+}
+
+char* pop() {
+    char* c=stk[tos].c;
+    tos=tos-1;
+    return c;
+}
+
 %}
 
 %union {
@@ -40,7 +84,7 @@ bool if_condition = false;
         int ival;
         float dval;
         char cval;
-        char *sval;
+        char sval[500];
         bool declared;
         bool assigned;
         int relop;
@@ -217,6 +261,7 @@ statement
 
 assignment
     : identifier ASSIGN expression {
+        // printf("Assignment: %s\n", $1.sval);
         if (!($1.datatype == $3.datatype || ($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2))) {
             // printf("122: $1: %d $3: %d\n", $1.datatype, $3.datatype);
             bool flag = true;
@@ -232,7 +277,9 @@ assignment
             }
         } else {
             for (int i=0; i<current_size; i++) {
+                // printf("Symbol Table name: %s. Identifier name: %s\n", symbolTable[i].name, $1.sval);
                 if (strcmp(symbolTable[i].name, $1.sval) == 0) {
+                    // printf("Symbol Table name: %s. Identifier name: %s\n", symbolTable[i].name, $1.sval);
                     symbolTable[i].assigned = true;
 
                     switch($1.datatype) {
@@ -282,16 +329,29 @@ assignment
     ;
 
 conditional
-    : IF expression THEN TOKEN_BEGIN statements END
-    | IF expression THEN TOKEN_BEGIN statements END ELSE TOKEN_BEGIN statements END
+    : IF expression THEN TOKEN_BEGIN statements END {
+        printf("if not(%s) goto L%d \n", $2.sval, loop_Variable);
+        printf("L%d: \n", loop_Variable++);
+    }
+    | IF expression THEN TOKEN_BEGIN statements END ELSE TOKEN_BEGIN statements END {
+        // printf("if not(%s) goto L%d \n", $2.sval, loop_Variable);
+        // printf("L%d: \n", loop_Variable++);
+    }
     ;
 
 loop
-    : WHILE expression DO TOKEN_BEGIN statements END {
+    : WHILE expression DO TOKEN_BEGIN {
         if (!($2.datatype == 3)) {
             printf("[ERROR] wrong type of condition in a while loop \n");
             error = true;
         }
+        printf("L%d: if not(%s) goto L%d\n", loop_Variable, $2.sval, loop_Variable+1);
+    } statements {
+
+    } END {
+
+        printf("goto L%d\n", loop_Variable++);
+        printf("L%d: \n", loop_Variable);
         // Write code to execute the loop statments
         
     }
@@ -434,6 +494,8 @@ expression: arithmetic_expression {
 
             // Returns only bool
             $$.bval = $1.bval;
+            strcpy($$.sval, $1.sval);
+            // printf("$$: %s, $1: %s\n", $$.sval, $1.sval);
           }
           | boolean_expression {
             $$.datatype = $1.datatype;
@@ -455,6 +517,13 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                                     break;
                             }
 
+                            char str[5], str1[5]="t"; 
+                            sprintf(str,"%d", temp_char++);
+                            strcat(str1, str); 
+                            addQuadruple(pop(), "+", pop(), str1);
+                            display_Quad(); 
+                            push(str1);
+
                         } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
                             $$.datatype = 2;
 
@@ -466,6 +535,13 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                                     $$.dval = $1.dval + (double)$3.ival;
                                     break;
                             }
+
+                            char str[5], str1[5]="t"; 
+                            sprintf(str,"%d", temp_char++);
+                            strcat(str1, str); 
+                            addQuadruple(pop(), "+", pop(), str1);
+                            display_Quad(); 
+                            push(str1);
 
                         } else {
                             printf("[ERROR] type error \n");
@@ -485,6 +561,13 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                                     break;
                             }
 
+                            char str[5], str1[5]="t"; 
+                            sprintf(str,"%d", temp_char++);
+                            strcat(str1, str); 
+                            addQuadruple(pop(), "-", pop(), str1);
+                            display_Quad(); 
+                            push(str1);
+
                         } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
                             $$.datatype = 2;
 
@@ -496,6 +579,13 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                                     $$.dval = $1.dval - (double)$3.ival;
                                     break;
                             }
+
+                            char str[5], str1[5]="t"; 
+                            sprintf(str,"%d", temp_char++);
+                            strcat(str1, str); 
+                            addQuadruple(pop(), "-", pop(), str1);
+                            display_Quad(); 
+                            push(str1);
 
                         } else {
                             printf("[ERROR] type error \n");
@@ -516,6 +606,13 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                                     break;
                             }
 
+                            char str[5], str1[5]="t"; 
+                            sprintf(str,"%d", temp_char++);
+                            strcat(str1, str); 
+                            addQuadruple(pop(), "*", pop(), str1);
+                            display_Quad(); 
+                            push(str1);
+
                         } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
                             $$.datatype = 2;
         
@@ -528,6 +625,13 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                                     break;
                             }
 
+                            char str[5], str1[5]="t"; 
+                            sprintf(str,"%d", temp_char++);
+                            strcat(str1, str); 
+                            addQuadruple(pop(), "*", pop(), str1);
+                            display_Quad(); 
+                            push(str1);
+
                         } else {
                             printf("[ERROR] type error \n");
                             error = true;
@@ -537,18 +641,46 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                         if ($1.datatype == 1 && $3.datatype == 1) {
                             $$.datatype = 2;
                             $$.dval = $1.ival / (double)$3.ival;
+
+                            char str[5], str1[5]="t"; 
+                            sprintf(str,"%d", temp_char++);
+                            strcat(str1, str); 
+                            addQuadruple(pop(), "/", pop(), str1);
+                            display_Quad(); 
+                            push(str1);
                         } 
                         else if ($1.datatype == 2 && $3.datatype == 2) {
                             $$.datatype = 2;
                             $$.dval = $1.dval / $3.dval;
+
+                            char str[5], str1[5]="t"; 
+                            sprintf(str,"%d", temp_char++);
+                            strcat(str1, str); 
+                            addQuadruple(pop(), "/", pop(), str1);
+                            display_Quad(); 
+                            push(str1);
                         }
                         else if ($1.datatype == 1 && $3.datatype == 2) {
                             $$.datatype = 2;
                             $$.dval = (double)$1.ival / $3.dval;
+
+                            char str[5], str1[5]="t"; 
+                            sprintf(str,"%d", temp_char++);
+                            strcat(str1, str); 
+                            addQuadruple(pop(), "/", pop(), str1);
+                            display_Quad(); 
+                            push(str1);
                         }
                         else if ($1.datatype == 2 && $3.datatype == 1) {
                             $$.datatype = 2;
                             $$.dval = $1.dval / (double)$3.ival;
+
+                            char str[5], str1[5]="t"; 
+                            sprintf(str,"%d", temp_char++);
+                            strcat(str1, str); 
+                            addQuadruple(pop(), "/", pop(), str1);
+                            display_Quad(); 
+                            push(str1);
                         }
                         else {
                             printf("[ERROR] type error \n");
@@ -559,6 +691,13 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                         if ($1.datatype == 1 && $3.datatype == 1) {
                             $$.datatype = 1;
                             $$.ival = $1.ival % $3.ival;
+
+                            char str[5], str1[5]="t"; 
+                            sprintf(str,"%d", temp_char++);
+                            strcat(str1, str); 
+                            addQuadruple(pop(), "%", pop(), str1);
+                            display_Quad(); 
+                            push(str1);
                         } else {
                             printf("[ERROR] type error \n");
                             error = true;
@@ -569,6 +708,10 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                      }
                      | primary_expression {
                         $$.datatype = $1.datatype;
+                        strcpy($$.sval, $1.sval);
+                        char c[5]; 
+                        strcpy(c, $1.sval); 
+                        push(c);
                      }
                      ;
 
@@ -584,23 +727,32 @@ relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expr
                             // relop: 1 = '=', 2 = '<=', 3 = '<', 4 = '>=', 5 = '>', 6 = '<>'
                             case 1:
                                 $$.bval = $1.ival == $3.ival;
+                                sprintf($$.sval, "%s == %s", $1.sval, $3.sval);
+                                // printf("$3: %s, $1: %s\n", $3.sval, $1.sval);
                                 break;
                             case 2:
                                 $$.bval = $1.ival <= $3.ival;
+                                sprintf($$.sval, "%s <= %s", $1.sval, $3.sval);
                                 break; 
                             case 3:
                                 $$.bval = $1.ival < $3.ival;
+                                sprintf($$.sval, "%s < %s", $1.sval, $3.sval);
                                 break;
                             case 4:
                                 $$.bval = $1.ival >= $3.ival;
+                                sprintf($$.sval, "%s >= %s", $1.sval, $3.sval);
                                 break;
                             case 5:
                                 $$.bval = $1.ival > $3.ival;
+                                sprintf($$.sval, "%s > %s", $1.sval, $3.sval);
                                 break;
                             case 6:
                                 $$.bval = $1.ival != $3.ival;
+                                sprintf($$.sval, "%s != %s", $1.sval, $3.sval);
                                 break;
                         }
+
+
                     }
                      | OPEN_BRACE relational_expression CLOSED_BRACE {
                         $$.datatype = $2.datatype;
@@ -643,15 +795,6 @@ boolean_expression: expression BINARY_BOOL_OPERATOR expression {
                   ;
 
 primary_expression: identifier {
-                    for (int i=0; i<current_size; i++) {
-                        if (strcmp(symbolTable[i].name, $1.sval) == 0) {
-                            if (!(symbolTable[i].assigned)) {
-                                printf("[ERROR] variable not assigned: %s\n", $1.sval);
-                                error = true;
-                            }
-                            break;
-                        }
-                    }
                     
                     if(!error) {
                         switch($1.datatype) {
@@ -670,18 +813,23 @@ primary_expression: identifier {
                         }
                     }
 
+                    strcpy($$.sval, $1.sval);
+
                   }
                   | INTEGER_CONST {
                     $$.datatype = 1;
                     $$.ival = (int)$1.ival;
+                    sprintf($$.sval, "%d", $$.ival);
                   }
                   | REAL_CONST {
                     $$.datatype = 2;
                     $$.dval = (float)$1.dval;
+                    sprintf($$.sval, "%f", $$.dval);
                   }
                   | CHARACTER_CONSTANT {
                     $$.datatype = 4;
                     $$.cval = (char)$1.cval;
+                    sprintf($$.sval, "%c", $$.cval);
                   }
                   ;
 
@@ -690,6 +838,7 @@ identifier: IDENTIFIER {
                 for (int i=0; i<current_size; i++) {
                     if (strcmp(symbolTable[i].name, $1.sval) == 0) {
                         $1.datatype = symbolTable[i].datatype;
+                        strcpy($1.sval, symbolTable[i].name);
 
                         switch($1.datatype) {
                             case 1:
@@ -724,6 +873,7 @@ identifier: IDENTIFIER {
                 $$.datatype = $1.datatype;
 
                 /*Changed @ 1:15PM May 2, remove if code breaks*/
+                // printf("Identifier: %s\n", $$.sval);
                 strcpy($$.sval, $1.sval);
 
                 /* Assign Check Data Type */
@@ -750,6 +900,7 @@ identifier: IDENTIFIER {
                 sprintf(temp, "%s[", $1.sval);
                 bool flag = true;
                 for (int i=0; i<current_size; i++) {
+                    // printf("%s\n", temp);
                     if (strncmp(symbolTable[i].name, temp, strlen(temp)) == 0) {
                         $1.datatype = symbolTable[i].datatype;
                         flag = false;
@@ -765,6 +916,10 @@ identifier: IDENTIFIER {
                     error = true;
                 }
                 $$.datatype = $1.datatype;
+
+                // char onlyName[100];
+                // strncpy(onlyName, temp, strlen(temp)-1);
+                // printf("onlyName: %s\n", onlyName);
 
                 sprintf(temp, "%s[%d]", $1.sval, $3.ival);
                 for (int i=0; i<current_size; i++) {
@@ -785,8 +940,9 @@ identifier: IDENTIFIER {
                         }
                     }
                 }
-
+                
                 strcpy($$.sval, temp);
+                // printf("1[1]: %s %s\n", $$.sval, temp);
 
                  /* Assign Check Data Type */
                 
