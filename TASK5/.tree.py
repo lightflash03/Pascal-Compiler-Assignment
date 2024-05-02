@@ -57,18 +57,15 @@ keywords = [
 ]
 
 def lookup(name):
-    # input(f"REALLY?{name}")
     for symbol in symbolTable:
         if symbol.name == name:
             return symbol
-    # print(name)
-    # input()
     return None
 
 int_matcher = r'^[-+]?\d+$'
 float_matcher = r'^[-+]?\d+\.\d*$'
 
-def evaluate_expression(tree, assignment=False):
+def evaluate_expression(tree):
     label = tree.label()
     if label in keywords:
         if label == 'DECLARATION-STATEMENT':
@@ -94,7 +91,7 @@ def evaluate_expression(tree, assignment=False):
         elif label == 'ASSIGNMENT':
             varname = tree[0].label()
             if varname == 'INDEX-AT':
-                var = lookup(f"{tree[0][0].label()}[{evaluate_expression(tree[0][1],assignment=True)}]")
+                var = lookup(f"{tree[0][0].label()}[{evaluate_expression(tree[0][1])}]")
             else:
                 var = lookup(varname)
 
@@ -102,10 +99,13 @@ def evaluate_expression(tree, assignment=False):
             var.value = val
 
         elif label == 'READ':
+            if tree[0].label() == "":
+                tree[0] = tree[0][0]
             varname = tree[0].label()
             if varname == 'INDEX-AT':
-                var = lookup(f"{tree[0][0].label()}[{evaluate_expression(tree[0][1])}]", assignment=True)
+                var = lookup(f"{tree[0][0].label()}[{evaluate_expression(tree[0][1])}]")
             else:
+                # if 
                 var = lookup(varname)
             if var.datatype == 'int':
                 var.value = int(input())
@@ -122,10 +122,6 @@ def evaluate_expression(tree, assignment=False):
         elif label == 'ADD':
             return evaluate_expression(tree[0]) + evaluate_expression(tree[1])
         elif label == 'SUBTRACT':
-            # print('before')
-            # print(evaluate_expression(tree[0]))
-            # print('after')
-            # input()
             return evaluate_expression(tree[0]) - evaluate_expression(tree[1])
         elif label == 'MULTIPLY':
             return evaluate_expression(tree[0]) * evaluate_expression(tree[1])
@@ -150,14 +146,9 @@ def evaluate_expression(tree, assignment=False):
             return evaluate_expression(tree[0]) > evaluate_expression(tree[1])
 
         elif label == 'INDEX-AT':
-            # input(tree[0].label())
-            # input(tree[1].label())
             varname = tree[0].label()
-            # print("BEFORE")
             index = int(evaluate_expression(tree[1]))
-            # input("hitler?")
             var = lookup(f"{varname}[{index}]")
-            # print(f"{varname}[{index}]")
             return var.value
 
         elif label == 'IF':
@@ -165,9 +156,9 @@ def evaluate_expression(tree, assignment=False):
                 evaluate_expression(tree[1])
         elif label == 'IF-ELSE':
             if evaluate_expression(tree[0][0]):
-                evaluate_expression(tree[1][0])
+                evaluate_expression(tree[1])
             else:
-                evaluate_expression(tree[2][0])
+                evaluate_expression(tree[2])
         elif label == 'WHILE':
             while evaluate_expression(tree[0][0]):
                 evaluate_expression(tree[1])
@@ -186,15 +177,13 @@ def evaluate_expression(tree, assignment=False):
                     var.value = i
                     for child in tree[1]:
                         evaluate_expression(child)
-        elif label == 'STATEMENTS':
+        elif label == 'STATEMENTS' or label == 'TRUE' or label == 'FALSE':
             for child in tree:
                 evaluate_expression(child)
         else:
             for child in tree:
                 evaluate_expression(child)
     elif label == "":
-        # print('inside')
-        # print(tree[0].label())
         return evaluate_expression(tree[0])
     else:
 
@@ -207,41 +196,43 @@ def evaluate_expression(tree, assignment=False):
             if var == None:
                 return str(label).replace('~',' ')
             else:
-                # print("THIS?")
-                # input(var.value)
                 return var.value
 
-evaluate_expression(main_tree)
+# evaluate_expression(main_tree)
 
-# try:
-#     evaluate_expression(main_tree)
-# except:
-#     print("Runtime Error")
-#     exit()
+try:
+    evaluate_expression(main_tree)
+except:
+    print("Runtime Error")
+    exit()
 
 print(f"┌────────────────┬────────────┬─────────────────────┐")
 print(f"│    Variable    │    Type    │        Value        │")
 print(f"├────────────────┼────────────┼─────────────────────┤")
-for symbol in symbolTable:
-    if symbol.datatype == 'int':
-        if symbol.value != None:
-            print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{symbol.value:^21d}│")
-        else:
-            print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'-':^21s}│")
-    elif symbol.datatype == 'real':
-        if symbol.value != None:
-            print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{symbol.value:^21f}│")
-        else:
-            print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'-':^21s}│")
-    elif symbol.datatype == 'bool':
-        if symbol.value != None:
-            print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'true' if symbol.value else 'false':^21s}│")
-        else:
-            print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'-':^21s}│")
-    elif symbol.datatype == 'char':
-        if symbol.value != None:
-            print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{symbol.value:^21s}│")
-        else:
-            print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'-':^21s}│")
+try:
+    for symbol in symbolTable:
+        if symbol.datatype == 'int':
+            if symbol.value != None:
+                print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{symbol.value:^21d}│")
+            else:
+                print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'-':^21s}│")
+        elif symbol.datatype == 'real':
+            if symbol.value != None:
+                print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{symbol.value:^21f}│")
+            else:
+                print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'-':^21s}│")
+        elif symbol.datatype == 'bool':
+            if symbol.value != None:
+                print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'true' if symbol.value else 'false':^21s}│")
+            else:
+                print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'-':^21s}│")
+        elif symbol.datatype == 'char':
+            if symbol.value != None:
+                print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{symbol.value:^21s}│")
+            else:
+                print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'-':^21s}│")
+except:
+    print(f"Runtime Error")
+    exit()
 
 print(f"└────────────────┴────────────┴─────────────────────┘")

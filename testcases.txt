@@ -180,3 +180,18 @@ begin
     write(i);
   end;
 end.
+
+
+#test_case_10 (pro2.txt)
+program NumberOfDigits;
+var
+  d,e: integer;
+  pro: array[2..7] of integer;
+begin
+  for d := 3 to -1 do
+  begin
+    pro[d+3] := d;
+    write(5);
+  end;
+end.
+

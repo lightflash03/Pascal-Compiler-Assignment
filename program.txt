@@ -1,12 +1,11 @@
 program NumberOfDigits;
 var
-  d,e: integer;
-  c: real;
-  g: boolean;
-  f: char;
+  base, height, hypo: integer;
 begin
-  d := 34;
-  WRITE(d + 5);
-  WRITE("Your");
-  f := 'r';
+    for base := 3 to 7 do
+    begin
+        read(height);
+        base := base * height - 1;
+        write(base, base < height);
+    end;
 end.
