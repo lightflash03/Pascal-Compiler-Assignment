@@ -275,6 +275,6 @@ int start_array = 0, end_array = 0;
 
 %%
 
-int yywrap() { 
+int yywrap() {
     return 1;
 }

@@ -563,10 +563,8 @@ int main(int argc, char *argv[]) {
 
     yyparse();
 
-    if (error) {
-        printf("Exiting because of semantic errors\n");
-        return 1;
-    }
+    if (error)
+        printf("No syntax errors found\nOne or more semantic errors found\n");
 
     // printf("Symbol Table\n");
     // printf("+-----------------------------------------+\n|     Variable     |   Type   |   Value   |\n|-----------------------------------------|\n");
