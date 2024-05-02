@@ -512,6 +512,7 @@ identifier: IDENTIFIER {
                     error = true;
                 }
                 $$.datatype = $1.datatype;
+                printf("TempName = %s\n", tempname);
                 sprintf($$.syntaxTree, "%s{INDEX-AT{%s}}", $1.sval, $3.syntaxTree);
                 sprintf($1.syntaxTree, "{%s{INDEX-AT{%s}}}", $1.sval, $3.syntaxTree);
           }
@@ -562,8 +563,10 @@ int main(int argc, char *argv[]) {
 
     yyparse();
 
-    if (error)
-        printf("No syntax errors found\nOne or more semantic errors found\n");
+    if (error) {
+        printf("Exiting because of semantic errors\n");
+        return 1;
+    }
 
     // printf("Symbol Table\n");
     // printf("+-----------------------------------------+\n|     Variable     |   Type   |   Value   |\n|-----------------------------------------|\n");
