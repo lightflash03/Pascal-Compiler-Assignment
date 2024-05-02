@@ -629,6 +629,9 @@ identifier: IDENTIFIER {
                 }
                 $$.datatype = $1.datatype;
 
+                /*Changed @ 1:15PM May 2, remove if code breaks*/
+                strcpy($$.sval, $1.sval);
+
                 /* Assign Check Data Type */
                 
                 // switch($1.datatype) {
@@ -674,20 +677,22 @@ identifier: IDENTIFIER {
                     if (strcmp(symbolTable[i].name, temp) == 0) {
                         switch(symbolTable[i].datatype) {
                             case 1:
-                                symbolTable[i].val.ival = $1.ival;
+                                $$.ival = symbolTable[i].val.ival;
                                 break;
                             case 2:
-                                symbolTable[i].val.dval = $1.dval;
+                                $$.dval = symbolTable[i].val.dval;
                                 break;
                             case 3:
-                                symbolTable[i].val.bval = $1.bval;
+                                $$.bval = symbolTable[i].val.bval;
                                 break;
                             case 4:
-                                symbolTable[i].val.cval = $1.cval;
+                                $$.cval = symbolTable[i].val.cval;
                                 break;
                         }
                     }
                 }
+
+                strcpy($$.sval, temp);
 
                  /* Assign Check Data Type */
                 
