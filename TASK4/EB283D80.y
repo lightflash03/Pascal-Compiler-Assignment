@@ -49,7 +49,7 @@ struct quadruple{
 
 struct stack{
     char c[10]; 
-} stk[25];
+} stk[50];
 
 void addQuadruple(char op1[], char op[], char op2[], char result[]) {
     strcpy (quad[qind].operator, op);
@@ -653,7 +653,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                                 break;
                         }
 
-                        char c[5]; 
+                        char c[50]; 
                         strcpy(c, $1.sval);
 
                         // printf("Array Value: %s\n", c); 
@@ -769,18 +769,18 @@ primary_expression: identifier {
                   }
                   | INTEGER_CONST {
                     $$.datatype = 1;
-                    $$.ival = (int)$1.ival;
-                    sprintf($$.sval, "%d", $$.ival);
+                    // $$.ival = (int)$1.ival;
+                    sprintf($$.sval, "%d", $1.ival);
                   }
                   | REAL_CONST {
                     $$.datatype = 2;
-                    $$.dval = (float)$1.dval;
-                    sprintf($$.sval, "%f", $$.dval);
+                    // $$.dval = (float)$1.dval;
+                    sprintf($$.sval, "%f", $1.dval);
                   }
                   | CHARACTER_CONSTANT {
                     $$.datatype = 4;
-                    $$.cval = (char)$1.cval;
-                    sprintf($$.sval, "%c", $$.cval);
+                    // $$.cval = (char)$1.cval;
+                    sprintf($$.sval, "%c", $1.cval);
                   }
                   ;
 
@@ -896,6 +896,7 @@ identifier: IDENTIFIER {
                 }
                 
                 strcpy($$.sval, temp);
+                // printf("%s\n", $$.sval);
 
                  /* Assign Check Data Type */
                 
