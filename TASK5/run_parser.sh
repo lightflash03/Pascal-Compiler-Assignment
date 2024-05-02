@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Generate y.tab.c from parser.y
-yacc -d parser.y
+yacc -d -Wcounterexamples parser.y
 
 # Generate lex.yy.c from lexer.l
 flex lexer.l

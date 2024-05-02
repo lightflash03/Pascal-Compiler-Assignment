@@ -61,6 +61,28 @@ char full_string[150] = "";
 }
 
 "="|"<"|">"|"<="|">="|"<>" {
+    // relop: 1 = '=', 2 = '<=', 3 = '<', 4 = '>=', 5 = '>', 6 = '<>'
+    switch(yytext[0]) {
+        case '=':
+            yylval.attr.relop = 1;
+            break;
+        case '<':
+            if (yytext[1] == '=') {
+                yylval.attr.relop = 2;
+            } else if (yytext[1] == '>') {
+                yylval.attr.relop = 6;
+            } else {
+                yylval.attr.relop = 3;
+            }
+            break;
+        case '>':
+            if (yytext[1] == '=') {
+                yylval.attr.relop = 4;
+            } else {
+                yylval.attr.relop = 5;
+            }
+            break;
+    }
     return RELATIONAL_OPERATOR;
 }
 
@@ -69,6 +91,13 @@ char full_string[150] = "";
 }
 
 "and"|"or" {
+    // and = 1 & or = 2
+    switch(yytext[0]) {
+        case 'a':
+            yylval.attr.bool_op = 1;
+        case 'o':
+            yylval.attr.bool_op = 2;
+    }
     return BINARY_BOOL_OPERATOR;
 }
 

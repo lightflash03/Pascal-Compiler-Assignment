@@ -29,6 +29,8 @@ int current_size = 0;
 
 bool error = false;
 
+bool if_condition = false;
+
 %}
 
 %union {
@@ -41,6 +43,8 @@ bool error = false;
         char *sval;
         bool declared;
         bool assigned;
+        int relop;
+        int bool_op;
     };
     struct attributes attr;
 
@@ -60,7 +64,7 @@ bool error = false;
     char string_const[100];
 }
 
-%token <attr> INTEGER_CONST REAL_CONST CHARACTER_CONSTANT IDENTIFIER DATA_TYPE 
+%token <attr> INTEGER_CONST REAL_CONST CHARACTER_CONSTANT IDENTIFIER DATA_TYPE RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR
 %token <arr_attr> ARRAY_DATA_TYPE
 %token <string_const> STRING_CONSTANT
 
@@ -68,7 +72,7 @@ bool error = false;
 
 %type <attr> expression primary_expression arithmetic_expression relational_expression boolean_expression identifier
 
-%token SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR PROGRAM VAR TO DOWNTO IF THEN ELSE WHILE FOR DO TOKEN_BEGIN END READ WRITE PUNCTUATOR
+%token SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO PROGRAM VAR TO DOWNTO IF THEN ELSE WHILE FOR DO TOKEN_BEGIN END READ WRITE PUNCTUATOR
 
 %left BINARY_BOOL_OPERATOR
 %left RELATIONAL_OPERATOR
@@ -278,18 +282,8 @@ assignment
     ;
 
 conditional
-    : IF expression THEN TOKEN_BEGIN statements END {
-        if (!($2.datatype == 3)) {
-            printf("[ERROR] wrong type of condition in a conditional expression \n");
-            error = true;
-        }
-    }
-    | IF expression THEN TOKEN_BEGIN statements END ELSE TOKEN_BEGIN statements END {
-        if (!($2.datatype == 3)) {
-            printf("[ERROR] wrong type of condition in a conditional expression \n");
-            error = true;
-        }
-    }
+    : IF expression THEN TOKEN_BEGIN statements END
+    | IF expression THEN TOKEN_BEGIN statements END ELSE TOKEN_BEGIN statements END
     ;
 
 loop
@@ -343,9 +337,14 @@ expression: arithmetic_expression {
           }
           | relational_expression {
             $$.datatype = $1.datatype;
+
+            // Returns only bool
+            $$.bval = $1.bval;
           }
           | boolean_expression {
             $$.datatype = $1.datatype;
+            // Returns only bool
+            $$.bval = $1.bval;
           }
           ;
 
@@ -486,9 +485,33 @@ relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expr
                             printf("[ERROR] wrong type of operand(s) in a relational expression \n");
                             error = true;
                         }
+                        // have only bool
+                        switch($2.relop) {
+                            // relop: 1 = '=', 2 = '<=', 3 = '<', 4 = '>=', 5 = '>', 6 = '<>'
+                            case 1:
+                                $$.bval = $1.ival == $3.ival;
+                                break;
+                            case 2:
+                                $$.bval = $1.ival <= $3.ival;
+                                break; 
+                            case 3:
+                                $$.bval = $1.ival < $3.ival;
+                                break;
+                            case 4:
+                                $$.bval = $1.ival >= $3.ival;
+                                break;
+                            case 5:
+                                $$.bval = $1.ival > $3.ival;
+                                break;
+                            case 6:
+                                $$.bval = $1.ival != $3.ival;
+                                break;
+                        }
                     }
                      | OPEN_BRACE relational_expression CLOSED_BRACE {
                         $$.datatype = $2.datatype;
+                        // have only bool
+                        $$.bval = $2.bval;
                      }
                      ;
 
@@ -499,6 +522,16 @@ boolean_expression: expression BINARY_BOOL_OPERATOR expression {
                             printf("[ERROR] wrong type of operand(s) in a boolean expression \n");
                             error = true;
                         }
+
+                        switch($2.bool_op) {
+                            // bool_op: 1 = 'and', 2 = 'or'
+                            case 1:
+                                $$.bval = $1.bval && $3.bval;
+                                break;
+                            case 2:
+                                $$.bval = $1.bval || $3.bval;
+                                break;
+                        }
                     }
                   | UNARY_BOOL_OPERATOR expression {
                         $$.datatype = 3;
@@ -506,9 +539,12 @@ boolean_expression: expression BINARY_BOOL_OPERATOR expression {
                             printf("[ERROR] wrong type of operand in a boolean expression \n");
                             error = true;
                         }
+
+                        $$.bval = !$2.bval;
                     }
                   | OPEN_BRACE boolean_expression CLOSED_BRACE {
                         $$.datatype = $2.datatype;
+                        $$.bval = $2.bval;
                      }
                   ;
 
