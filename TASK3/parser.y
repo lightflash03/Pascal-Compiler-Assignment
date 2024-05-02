@@ -208,9 +208,10 @@ statement
                 break;
             }
         }
+        sprintf($$.syntaxTree, "[READ[%s]]", $3.sval);
     }
     | WRITE OPEN_BRACE output CLOSED_BRACE {
-
+        sprintf($$.syntaxTree, "[WRITE[%s]]", $3.syntaxTree);
     }
     ;
 
@@ -248,12 +249,14 @@ conditional
             printf("[ERROR] wrong type of condition in a conditional expression \n");
             error = true;
         }
+        sprintf($$.syntaxTree, "[IF[CONDITION[%s]][TRUE%s]]", $2.syntaxTree, $5.syntaxTree);
     }
     | IF expression THEN TOKEN_BEGIN statements END ELSE TOKEN_BEGIN statements END {
         if (!($2.datatype == 3)) {
             printf("[ERROR] wrong type of condition in a conditional expression \n");
             error = true;
         }
+        sprintf($$.syntaxTree, "[IF-ELSE[CONDITION[%s]][TRUE%s][FALSE%s]]", $2.syntaxTree, $5.syntaxTree, $9.syntaxTree);
     }
     ;
 
@@ -263,6 +266,7 @@ loop
             printf("[ERROR] wrong type of condition in a while loop \n");
             error = true;
         }
+        sprintf($$.syntaxTree, "[WHILE[CONDITION[%s]][STATEMENTS%s]]", $2.syntaxTree, $5.syntaxTree);
     }
     | FOR identifier ASSIGN expression DOWNTO expression DO TOKEN_BEGIN statements END {
         if (!($4.datatype == 1 && $6.datatype == 1)) {
@@ -272,6 +276,7 @@ loop
             printf("[ERROR] wrong type of variable in a for loop \n");
             error = true;
         }
+        sprintf($$.syntaxTree, "[FOR[CONDITION[%s[DOWN-TO[%s][%s]]]][STATEMENTS%s]]", $2.syntaxTree, $4.syntaxTree, $6.syntaxTree, $9.syntaxTree);
     }
     | FOR identifier ASSIGN expression TO expression DO TOKEN_BEGIN statements END {
         if (!($4.datatype == 1 && $6.datatype == 1)) {
@@ -281,6 +286,7 @@ loop
             printf("[ERROR] wrong type of variable in a for loop \n");
             error = true;
         }
+        sprintf($$.syntaxTree, "[FOR[CONDITION[%s[TO[%s][%s]]]][STATEMENTS%s]]", $2.syntaxTree, $4.syntaxTree, $6.syntaxTree, $9.syntaxTree);
     }
     ;
 
@@ -454,6 +460,7 @@ identifier: IDENTIFIER {
                     printf("[ERROR] undeclared variable: %s\n", $1.sval);
                 }
                 $$.datatype = $1.datatype;
+                sprintf($$.syntaxTree, "%s", $1.sval);
           }
           | IDENTIFIER SQUARE_OPEN expression SQUARE_CLOSE {
                 char temp[100];

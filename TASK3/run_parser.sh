@@ -18,7 +18,7 @@ if [ $return_value -eq 0 ]; then
     echo "No syntax errors found"
     echo "No semantic errors found"
     echo "Printing Syntax Tree..."
-    python tree.py
+    python3 tree.py
 fi
 
 # Clean up
