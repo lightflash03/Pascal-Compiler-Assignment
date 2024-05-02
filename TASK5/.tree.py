@@ -65,6 +65,9 @@ def lookup(name):
     # input()
     return None
 
+int_matcher = r'^[-+]?\d+$'
+float_matcher = r'^[-+]?\d+\.\d*$'
+
 def evaluate_expression(tree, assignment=False):
     label = tree.label()
     if label in keywords:
@@ -194,11 +197,11 @@ def evaluate_expression(tree, assignment=False):
         # print(tree[0].label())
         return evaluate_expression(tree[0])
     else:
-        if bool(re.search(r'\d', label)):
-            if '.' in label:
-                return float(label)
-            else:
-                return int(label)
+
+        if re.match(int_matcher, label):
+            return int(label)
+        elif re.match(float_matcher, label):
+            return float(label)
         else:
             var = lookup(label)
             if var == None:
