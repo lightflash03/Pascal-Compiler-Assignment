@@ -15,7 +15,7 @@ for task in ["TASK3", "TASK4", "TASK5"]:
     subprocess.call(yacc)
     lex = ["flex", lex_file]
     subprocess.call(lex)
-    compile = ["gcc", "y.tab.c", "lex.yy.c", "-w", "-ly", "-o", "parser.out"]
+    compile = ["gcc", "y.tab.c", "lex.yy.c", "-w", "-ll", "-o", "parser.out"]
     subprocess.call(compile)
     if os.path.isfile('./parser.out'):
         print(f"\n\n{task} Compiled successfully !!!!")
