@@ -69,7 +69,15 @@ def evaluate_expression(tree):
             for child in tree:
                 childlabel = child.label()
                 if childlabel.endswith(']'):
-                    pass
+                    datatyp = childlabel.split('[')[0]
+                    sv, ev = childlabel.split('[')[1].split(']')[0].split('..')
+                    sv = int(sv)
+                    ev = int(ev)
+                    for grandchild in child:
+                        grandchild_label = grandchild.label()
+                        for var in grandchild_label.split(','):
+                            for i in range(sv, ev+1):
+                                symbolTable.append(Symbol(name=f"{var}[{i}]",datatype=datatyp,value=None))
                 else:
                     datatyp = childlabel
                     for grandchild in child:
@@ -85,7 +93,10 @@ def evaluate_expression(tree):
 
         elif label == 'READ':
             varname = tree[0].label()
-            var = lookup(varname)
+            if varname == 'INDEX-AT':
+                var = lookup(f"{tree[0][0].label()}[{evaluate_expression(tree[0][1])}]")
+            else:
+                var = lookup(varname)
             if var.datatype == 'int':
                 var.value = int(input())
             elif var.datatype == 'real':
@@ -122,7 +133,13 @@ def evaluate_expression(tree):
             return evaluate_expression(tree[0]) >= evaluate_expression(tree[1])
         elif label == 'GREATER-THAN':
             return evaluate_expression(tree[0]) > evaluate_expression(tree[1])
-        
+
+        elif label == 'INDEX-AT':
+            varname = tree[0].label()
+            index = int(evaluate_expression(tree[1]))
+            var = lookup(f"varname[{index}]")
+            return var.value[index]
+
         elif label == 'IF':
             if evaluate_expression(tree[0][0]):
                 evaluate_expression(tree[1])
@@ -162,6 +179,12 @@ def evaluate_expression(tree):
                 return var.value
 
 evaluate_expression(main_tree)
+
+# try:
+#     evaluate_expression(main_tree)
+# except:
+#     print("Runtime Error")
+#     exit()
 
 print(f"┌────────────────┬────────────┬─────────────────────┐")
 print(f"│    Variable    │    Type    │        Value        │")

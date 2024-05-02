@@ -221,7 +221,7 @@ statement
                 break;
             }
         }
-        sprintf($$.syntaxTree, "{READ{%s}}", $3.sval);
+        sprintf($$.syntaxTree, "{READ{%s}}", $3.syntaxTree);
     }
     | WRITE OPEN_BRACE output CLOSED_BRACE {
         sprintf($$.syntaxTree, "{WRITE{%s}}", $3.syntaxTree);
@@ -512,8 +512,8 @@ identifier: IDENTIFIER {
                     error = true;
                 }
                 $$.datatype = $1.datatype;
-                sprintf($$.syntaxTree, "%s{INDEX-AT{%s}}", $1.sval, $3.syntaxTree);
-                sprintf($1.syntaxTree, "{%s{INDEX-AT{%s}}}", $1.sval, $3.syntaxTree);
+                sprintf($$.syntaxTree, "INDEX-AT{%s}{%s}", $1.sval, $3.syntaxTree);
+                sprintf($1.syntaxTree, "INDEX-AT{%s}{%s}", $1.sval, $3.syntaxTree);
           }
           ;
 

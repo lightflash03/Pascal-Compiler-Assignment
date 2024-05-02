@@ -4,9 +4,7 @@
 #include "y.tab.h"
 
 int start_array = 0, end_array = 0;
-
-char tempString[100];
-
+char full_string[150] = "";
 %}
 
 %x START_QUOTE 
@@ -63,24 +61,25 @@ char tempString[100];
 }
 
 "="|"<"|">"|"<="|">="|"<>" {
-    switch (yytext[0]) {
+    // relop: 1 = '=', 2 = '<=', 3 = '<', 4 = '>=', 5 = '>', 6 = '<>'
+    switch(yytext[0]) {
         case '=':
-            strcpy(yylval.attr.sval,"EQUALS");
+            yylval.attr.relop = 1;
             break;
         case '<':
             if (yytext[1] == '=') {
-                strcpy(yylval.attr.sval,"LESS-THAN-OR-EQUAL-TO");
+                yylval.attr.relop = 2;
             } else if (yytext[1] == '>') {
-                strcpy(yylval.attr.sval,"NOT-EQUALS");
+                yylval.attr.relop = 6;
             } else {
-                strcpy(yylval.attr.sval,"LESS-THAN");
+                yylval.attr.relop = 3;
             }
             break;
         case '>':
             if (yytext[1] == '=') {
-                strcpy(yylval.attr.sval,"GREATER-THAN-OR-EQUAL-TO");
+                yylval.attr.relop = 4;
             } else {
-                strcpy(yylval.attr.sval,"GREATER-THAN");
+                yylval.attr.relop = 5;
             }
             break;
     }
@@ -92,10 +91,12 @@ char tempString[100];
 }
 
 "and"|"or" {
-    if (strcmp(strdup(yytext), "and") == 0) {
-        strcpy(yylval.attr.sval, "AND");
-    } else if (strcmp(strdup(yytext), "or") == 0) {
-        strcpy(yylval.attr.sval, "OR");
+    // and = 1 & or = 2
+    switch(yytext[0]) {
+        case 'a':
+            yylval.attr.bool_op = 1;
+        case 'o':
+            yylval.attr.bool_op = 2;
     }
     return BINARY_BOOL_OPERATOR;
 }
@@ -170,13 +171,11 @@ char tempString[100];
 }
 
 "to" {
-    strcpy(yylval.attr.sval,"TO");
     return TO;
 }
 
 "downto" {
-    strcpy(yylval.attr.sval,"DOWNTO");
-    return TO;
+    return DOWNTO;
 }
 
 "if" {
@@ -195,7 +194,7 @@ char tempString[100];
     return WHILE;
 }
 
-"for" { 
+"for" {
     return FOR;
 }
 
@@ -230,7 +229,7 @@ char tempString[100];
 }
 
 [a-zA-Z][a-zA-Z0-9_]*   {
-    strcpy(yylval.attr.sval,strdup(yytext));
+    yylval.attr.sval = strdup(yytext);
     return IDENTIFIER;
 }
 
@@ -263,13 +262,12 @@ char tempString[100];
 }
 
 <START_QUOTE>[^\"]* {
-    strcpy(tempString,strdup(yytext));
+    strcpy(full_string, yytext);
     BEGIN ANY_STRING;
-
 }
 
 <ANY_STRING>\" {
-    strcpy(yylval.attr.sval, tempString);
+    strcpy(yylval.string_const, full_string);
     BEGIN INITIAL;
     return STRING_CONSTANT; 
 }
@@ -281,6 +279,6 @@ char tempString[100];
 
 %%
 
-int yywrap() {
+int yywrap() { 
     return 1;
 }

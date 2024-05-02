@@ -17,19 +17,18 @@ typedef struct {
     union value {
         int ival;
         float dval;
-        bool bval;
-        char cval;
+        char sval;
     } val;
     bool declared, assigned;
 } Symbol;
 
 Symbol symbolTable[100];
 
+char mainSyntaxTree[10000] = "";
+
 int current_size = 0;
 
 bool error = false;
-
-bool if_condition = false;
 
 %}
 
@@ -40,11 +39,10 @@ bool if_condition = false;
         int ival;
         float dval;
         char cval;
-        char *sval;
+        char sval[100];
         bool declared;
         bool assigned;
-        int relop;
-        int bool_op;
+        char syntaxTree[10000];
     };
     struct attributes attr;
 
@@ -55,24 +53,21 @@ bool if_condition = false;
         int second_ival;
         float dval;
         char cval;
-        char *sval;
+        char sval[100];
         bool declared;
         bool assigned;
+        char syntaxTree[10000];
     };
     struct arr_attributes arr_attr;
 
-    char string_const[100];
 }
 
-%token <attr> INTEGER_CONST REAL_CONST CHARACTER_CONSTANT IDENTIFIER DATA_TYPE RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR
-%token <arr_attr> ARRAY_DATA_TYPE
-%token <string_const> STRING_CONSTANT
+%token <attr> INTEGER_CONST REAL_CONST CHARACTER_CONSTANT IDENTIFIER DATA_TYPE RELATIONAL_OPERATOR BINARY_BOOL_OPERATOR UNARY_BOOL_OPERATOR STRING_CONSTANT
+%token <arr_attr> ARRAY_DATA_TYPE TO
 
-%type <string_const> output output_list
+%type <attr> expression primary_expression arithmetic_expression relational_expression boolean_expression identifier statements statement program declarations multiple_lines declaration_line assignment conditional loop output output_list multiple_identifiers
 
-%type <attr> expression primary_expression arithmetic_expression relational_expression boolean_expression identifier
-
-%token SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO PROGRAM VAR TO DOWNTO IF THEN ELSE WHILE FOR DO TOKEN_BEGIN END READ WRITE PUNCTUATOR
+%token SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO PROGRAM VAR IF THEN ELSE WHILE FOR DO TOKEN_BEGIN END READ WRITE PUNCTUATOR
 
 %left BINARY_BOOL_OPERATOR
 %left RELATIONAL_OPERATOR
@@ -85,16 +80,26 @@ bool if_condition = false;
 %%
 
 program
-    : PROGRAM IDENTIFIER SEMICOLON declarations TOKEN_BEGIN statements END FULLSTOP
+    : PROGRAM IDENTIFIER SEMICOLON declarations TOKEN_BEGIN statements END FULLSTOP {
+        // char temp[10000];
+        sprintf($$.syntaxTree, "{PROGRAM%s{STATEMENTS%s}}", $4.syntaxTree, $6.syntaxTree);
+        strcpy(mainSyntaxTree, $$.syntaxTree);
+    }
     ;
 
 declarations
-    : VAR multiple_lines
+    : VAR multiple_lines {
+        sprintf($$.syntaxTree, "{DECLARATIONS%s}", $2.syntaxTree);
+    }
     ;
 
 multiple_lines
-    : declaration_line multiple_lines
-    | declaration_line
+    : declaration_line multiple_lines {
+        sprintf($$.syntaxTree, "%s%s", $1.syntaxTree, $2.syntaxTree);
+    }
+    | declaration_line {
+        sprintf($$.syntaxTree, "%s", $1.syntaxTree);
+    }
     ;
 
 // Doesn't support the case of no declarations
@@ -107,6 +112,15 @@ declaration_line
                 symbolTable[i].datatype = $3.datatype;
             }
         }
+        if ($3.datatype == 1)
+            sprintf($3.syntaxTree, "int");
+        else if ($3.datatype == 2)
+            sprintf($3.syntaxTree, "real");
+        else if ($3.datatype == 3)
+            sprintf($3.syntaxTree, "bool");
+        else if ($3.datatype == 4)
+            sprintf($3.syntaxTree, "char");
+        sprintf($$.syntaxTree, "{DECLARATION-STATEMENT{%s{%s}}}", $3.syntaxTree, $1.syntaxTree);
     }
     | multiple_identifiers COLON ARRAY_DATA_TYPE SEMICOLON {
         char vars[100][100];
@@ -139,6 +153,15 @@ declaration_line
             }
             j++;
         }
+        if ($3.datatype == 1)
+            sprintf($3.syntaxTree, "int[%d..%d]", $3.first_ival, $3.second_ival);
+        else if ($3.datatype == 2)
+            sprintf($3.syntaxTree, "real[%d..%d]", $3.first_ival, $3.second_ival);
+        else if ($3.datatype == 3)
+            sprintf($3.syntaxTree, "bool{%d..%d}", $3.first_ival, $3.second_ival);
+        else if ($3.datatype == 4)
+            sprintf($3.syntaxTree, "char{%d..%d}", $3.first_ival, $3.second_ival);
+        sprintf($$.syntaxTree, "{DECLARATION-STATEMENT{%s{%s}}}", $3.syntaxTree, $1.syntaxTree);
     }
     ;
 
@@ -153,6 +176,7 @@ multiple_identifiers
         strcpy(symbolTable[current_size].name, $1.sval);
         symbolTable[current_size++].declared = false;
         $1.assigned = false;
+        sprintf($$.syntaxTree, "%s,%s", $1.sval, $3.syntaxTree);
     }
     | IDENTIFIER {
         for (int i=0; i<current_size; i++) {
@@ -164,60 +188,49 @@ multiple_identifiers
         strcpy(symbolTable[current_size].name, $1.sval);
         symbolTable[current_size++].declared = false;
         $1.assigned = false;
+        sprintf($$.syntaxTree, "%s", $1.sval);
     }
     ;
 
 statements
-    :
-    | statement SEMICOLON statements
-    | TOKEN_BEGIN statements END statements
+    : {
+        sprintf($$.syntaxTree, "");
+    }
+    | statement SEMICOLON statements {
+        sprintf($$.syntaxTree, "%s%s", $1.syntaxTree, $3.syntaxTree);
+    }
+    | TOKEN_BEGIN statements END statements {
+        sprintf($$.syntaxTree, "%s%s", $2.syntaxTree, $4.syntaxTree);
+    }
     ;
 
 statement
-    : assignment
-    | conditional
-    | loop
+    : assignment {
+        sprintf($$.syntaxTree, "%s", $1.syntaxTree);
+    }
+    | conditional {
+        sprintf($$.syntaxTree, "%s", $1.syntaxTree);
+    }
+    | loop {
+        sprintf($$.syntaxTree, "%s", $1.syntaxTree);
+    }
     | READ OPEN_BRACE identifier CLOSED_BRACE {
         for (int i=0; i<current_size; i++) {
             if (strcmp(symbolTable[i].name, $3.sval) == 0) {
                 symbolTable[i].assigned = true;
-                
-                switch(symbolTable[i].datatype) {
-                    case 1:
-                        scanf("%d", &symbolTable[i].val.ival);
-                        $3.datatype = 1;
-                        $3.ival = symbolTable[i].val.ival;
-                        break;
-                    case 2:
-                        scanf("%f", &symbolTable[i].val.dval);
-                        $3.datatype = 2;
-                        $3.dval = symbolTable[i].val.dval;
-                        break;
-                    case 3:
-                        scanf("%d", &symbolTable[i].val.bval);
-                        $3.datatype = 3;
-                        $3.bval = symbolTable[i].val.bval;
-                        break;
-                    case 4:
-                        scanf("%c", &symbolTable[i].val.cval);
-                        $3.datatype = 4;
-                        $3.cval = symbolTable[i].val.cval;
-                        break;
-                }
-
                 break;
             }
         }
+        sprintf($$.syntaxTree, "{READ{%s}}", $3.syntaxTree);
     }
     | WRITE OPEN_BRACE output CLOSED_BRACE {
-        // printf("In write statement\n");
-        printf("%s\n", $3);
+        sprintf($$.syntaxTree, "{WRITE{%s}}", $3.syntaxTree);
     }
     ;
 
 assignment
     : identifier ASSIGN expression {
-        if (!($1.datatype == $3.datatype || ($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2))) {
+        if (!($1.datatype == $3.datatype || ($1.datatype == 2 && $3.datatype == 1))) {
             // printf("122: $1: %d $3: %d\n", $1.datatype, $3.datatype);
             bool flag = true;
             for (int i=0; i<current_size; i++) {
@@ -234,56 +247,33 @@ assignment
             for (int i=0; i<current_size; i++) {
                 if (strcmp(symbolTable[i].name, $1.sval) == 0) {
                     symbolTable[i].assigned = true;
-
-                    switch($1.datatype) {
-                            case 1:
-                                if ($1.datatype == $3.datatype) {
-                                    symbolTable[i].val.ival = $3.ival;
-                                    $1.datatype = $3.datatype;
-                                    $1.ival = $3.ival;
-                                }
-                                else if ($1.datatype == 2 && $3.datatype == 1) {
-                                    symbolTable[i].val.dval = (float)$3.ival;
-                                    $1.datatype = 2;
-                                    $1.dval = (int)$3.dval;
-                                }
-                                else {
-                                    symbolTable[i].val.dval = $3.dval;
-                                    $1.datatype = 2;
-                                    $1.dval = (int)$3.dval;
-                                }
-                                break;
-                            case 2:
-                                if ($3.datatype == 1) {
-                                    symbolTable[i].val.dval = (float)$3.ival;
-                                    $1.datatype = 2;
-                                    $1.dval = (int)$3.ival;
-                                } else {
-                                    symbolTable[i].val.dval = $3.dval;
-                                    $1.datatype = 2;
-                                    $1.dval = $3.dval;
-                                }
-                                break;
-                            case 3:
-                                symbolTable[i].val.bval = $3.bval;
-                                $1.bval = $3.bval;
-                                break;
-                            case 4:
-                                symbolTable[i].val.cval = $3.cval;
-                                $1.cval = $3.cval;
-                                break;
-                        }
-
                     break;
                 }
             }
+            // printf("Assigned %s\n", $1.sval);
         }
+        if (strlen($1.syntaxTree) == 0)
+            sprintf($$.syntaxTree, "{ASSIGNMENT{%s{%s}}}", $1.sval, $3.syntaxTree);
+        else
+            sprintf($$.syntaxTree, "{ASSIGNMENT{%s{%s}}}", $1.syntaxTree, $3.syntaxTree);
     }
     ;
 
 conditional
-    : IF expression THEN TOKEN_BEGIN statements END
-    | IF expression THEN TOKEN_BEGIN statements END ELSE TOKEN_BEGIN statements END
+    : IF expression THEN TOKEN_BEGIN statements END {
+        if (!($2.datatype == 3)) {
+            printf("[ERROR] wrong type of condition in a conditional expression \n");
+            error = true;
+        }
+        sprintf($$.syntaxTree, "{IF{CONDITION{%s}}{TRUE%s}}", $2.syntaxTree, $5.syntaxTree);
+    }
+    | IF expression THEN TOKEN_BEGIN statements END ELSE TOKEN_BEGIN statements END {
+        if (!($2.datatype == 3)) {
+            printf("[ERROR] wrong type of condition in a conditional expression \n");
+            error = true;
+        }
+        sprintf($$.syntaxTree, "{IF-ELSE{CONDITION{%s}}{TRUE%s}{FALSE%s}}", $2.syntaxTree, $5.syntaxTree, $9.syntaxTree);
+    }
     ;
 
 loop
@@ -292,340 +282,145 @@ loop
             printf("[ERROR] wrong type of condition in a while loop \n");
             error = true;
         }
-        // Write code to execute the loop statments
-        
+        sprintf($$.syntaxTree, "{WHILE{CONDITION{%s}}{STATEMENTS%s}}", $2.syntaxTree, $5.syntaxTree);
     }
-    | FOR identifier ASSIGN expression DOWNTO expression DO TOKEN_BEGIN statements END {
-        if (!($4.datatype == 1 && $6.datatype == 1)) {
+    | FOR identifier {
+        bool flag = true;
+        for (int i=0; i<current_size; i++) {
+            if (strcmp(symbolTable[i].name, $2.sval) == 0) {
+                flag = false;
+                symbolTable[i].assigned = true;
+                break;
+            }
+        }
+        if (flag) {
+            error = true;
+            printf("[ERROR] undeclared variable: %s\n", $2.sval);
+        }
+    } ASSIGN expression TO expression DO TOKEN_BEGIN statements END {
+        if (!($5.datatype == 1 && $7.datatype == 1)) {
             printf("[ERROR] wrong type of expression in a for loop \n");
             error = true;
         } else if (!($2.datatype == 1)) {
             printf("[ERROR] wrong type of variable in a for loop \n");
             error = true;
-        } else {
-            for (int i=0; i<current_size; i++) {
-                if (strcmp(symbolTable[i].name, $2.sval) == 0) {
-                    symbolTable[i].assigned = true;
-
-                    switch($2.datatype) {
-                            case 1:
-                                if ($2.datatype == $4.datatype) {
-                                    symbolTable[i].val.ival = $4.ival;
-                                    $2.datatype = $4.datatype;
-                                    $2.ival = $4.ival;
-                                }
-                                else if ($2.datatype == 2 && $4.datatype == 1) {
-                                    symbolTable[i].val.dval = (float)$4.ival;
-                                    $2.datatype = 2;
-                                    $2.dval = (int)$4.dval;
-                                }
-                                else {
-                                    symbolTable[i].val.dval = $4.dval;
-                                    $2.datatype = 2;
-                                    $2.dval = (int)$4.dval;
-                                }
-                                break;
-                            case 2:
-                                if ($4.datatype == 1) {
-                                    symbolTable[i].val.dval = (float)$4.ival;
-                                    $2.datatype = 2;
-                                    $2.dval = (int)$4.ival;
-                                } else {
-                                    symbolTable[i].val.dval = $4.dval;
-                                    $2.datatype = 2;
-                                    $2.dval = $4.dval;
-                                }
-                                break;
-                            case 3:
-                                symbolTable[i].val.bval = $4.bval;
-                                $2.bval = $4.bval;
-                                break;
-                            case 4:
-                                symbolTable[i].val.cval = $4.cval;
-                                $2.cval = $4.cval;
-                                break;
-                        }
-
-                    break;
-                }
-            }
         }
-    }
-    | FOR identifier ASSIGN expression TO expression DO TOKEN_BEGIN statements END {
-        if (!($4.datatype == 1 && $6.datatype == 1)) {
-            printf("[ERROR] wrong type of expression in a for loop \n");
-            error = true;
-        } else if (!($2.datatype == 1)) {
-            printf("[ERROR] wrong type of variable in a for loop \n");
-            error = true;
-        } else {
-            for (int i=0; i<current_size; i++) {
-                if (strcmp(symbolTable[i].name, $2.sval) == 0) {
-                    symbolTable[i].assigned = true;
-
-                    switch($2.datatype) {
-                            case 1:
-                                if ($2.datatype == $4.datatype) {
-                                    symbolTable[i].val.ival = $4.ival;
-                                    $2.datatype = $4.datatype;
-                                    $2.ival = $4.ival;
-                                }
-                                else if ($2.datatype == 2 && $4.datatype == 1) {
-                                    symbolTable[i].val.dval = (float)$4.ival;
-                                    $2.datatype = 2;
-                                    $2.dval = (int)$4.dval;
-                                }
-                                else {
-                                    symbolTable[i].val.dval = $4.dval;
-                                    $2.datatype = 2;
-                                    $2.dval = (int)$4.dval;
-                                }
-                                break;
-                            case 2:
-                                if ($4.datatype == 1) {
-                                    symbolTable[i].val.dval = (float)$4.ival;
-                                    $2.datatype = 2;
-                                    $2.dval = (int)$4.ival;
-                                } else {
-                                    symbolTable[i].val.dval = $4.dval;
-                                    $2.datatype = 2;
-                                    $2.dval = $4.dval;
-                                }
-                                break;
-                            case 3:
-                                symbolTable[i].val.bval = $4.bval;
-                                $2.bval = $4.bval;
-                                break;
-                            case 4:
-                                symbolTable[i].val.cval = $4.cval;
-                                $2.cval = $4.cval;
-                                break;
-                        }
-
-                    break;
-                }
-            }
-        }
+        if (strcmp($7.sval,"TO") == 0)
+            sprintf($$.syntaxTree, "{FOR{CONDITION{%s{TO{%s}{%s}}}}{STATEMENTS%s}}", $2.syntaxTree, $5.syntaxTree, $7.syntaxTree, $10.syntaxTree);
+        else if (strcmp($7.sval,"DOWNTO") == 0)
+            sprintf($$.syntaxTree, "{FOR{CONDITION{%s{DOWN-TO{%s}{%s}}}}{STATEMENTS%s}}", $2.syntaxTree, $5.syntaxTree, $7.syntaxTree, $10.syntaxTree);
     }
     ;
 
 expression: arithmetic_expression {
-
             $$.datatype = $1.datatype;
-
-            switch($1.datatype) {
-                case 1:
-                    $$.ival = $1.ival;
-                    break;
-                case 2:
-                    $$.dval = $1.dval;
-                    break;
-                case 3:
-                    $$.bval = $1.bval;
-                    break;
-                case 4:
-                    $$.cval = $1.cval;
-                    break;
-            }
-
+            sprintf($$.syntaxTree, "%s", $1.syntaxTree);
           }
           | relational_expression {
             $$.datatype = $1.datatype;
-
-            // Returns only bool
-            $$.bval = $1.bval;
+            sprintf($$.syntaxTree, "%s", $1.syntaxTree);
           }
           | boolean_expression {
             $$.datatype = $1.datatype;
-            // Returns only bool
-            $$.bval = $1.bval;
+            sprintf($$.syntaxTree, "%s", $1.syntaxTree);
           }
           ;
 
 arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
-                        if ($1.datatype == $3.datatype && ($1.datatype == 1 || $1.datatype == 2)) {
+                        if ($1.datatype == $3.datatype) {
+                            // printf("Arith ADD: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = $1.datatype;
-
-                            switch($1.datatype) {
-                                case 1:
-                                    $$.ival = $1.ival + $3.ival;
-                                    break;
-                                case 2:
-                                    $$.dval = $1.dval + $3.dval;
-                                    break;
-                            }
-
                         } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
+                            // printf("Arith ADD: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = 2;
-
-                            switch($1.datatype) {
-                                case 1: // means $3 is double
-                                    $$.dval = (double)$1.ival + $3.dval;
-                                    break;
-                                case 2: // means $1 is double
-                                    $$.dval = $1.dval + (double)$3.ival;
-                                    break;
-                            }
-
                         } else {
+                            // printf("155: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             printf("[ERROR] type error \n");
                             error = true;
                         }
+                        sprintf($$.syntaxTree, "ADD{%s}{%s}", $1.syntaxTree, $3.syntaxTree);
                     }
                      | arithmetic_expression SUBTRACT arithmetic_expression {
-                        if ($1.datatype == $3.datatype && ($1.datatype == 1 || $1.datatype == 2)) {
+                        if ($1.datatype == $3.datatype) {
+                            // printf("Arith SUB: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = $1.datatype;
-
-                            switch($1.datatype) {
-                                case 1:
-                                    $$.ival = $1.ival - $3.ival;
-                                    break;
-                                case 2:
-                                    $$.dval = $1.dval - $3.dval;
-                                    break;
-                            }
-
                         } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
+                            // printf("Arith SUB: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = 2;
-
-                            switch($1.datatype) {
-                                case 1: // means $3 is double
-                                    $$.dval = (double)$1.ival - $3.dval;
-                                    break;
-                                case 2: // means $1 is double
-                                    $$.dval = $1.dval - (double)$3.ival;
-                                    break;
-                            }
-
                         } else {
+                            // printf("166: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             printf("[ERROR] type error \n");
                             error = true;
                         }
+                        sprintf($$.syntaxTree, "SUBTRACT{%s}{%s}", $1.syntaxTree, $3.syntaxTree);
                     }
                      | arithmetic_expression MULTIPLY arithmetic_expression {
-
-                        if ($1.datatype == $3.datatype && ($1.datatype == 1 || $1.datatype == 2)) {
+                        if ($1.datatype == $3.datatype) {
+                            // printf("Arith MULT: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = $1.datatype;
-
-                            switch($1.datatype) {
-                                case 1:
-                                    $$.ival = $1.ival * $3.ival;
-                                    break;
-                                case 2:
-                                    $$.dval = $1.dval * $3.dval;
-                                    break;
-                            }
-
                         } else if (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2)){
+                            // printf("Arith MULT: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = 2;
-        
-                            switch($1.datatype) {
-                                case 1: // means $3 is double
-                                    $$.dval = (double)$1.ival * $3.dval;
-                                    break;
-                                case 2: // means $1 is double
-                                    $$.dval = $1.dval * (double)$3.ival;
-                                    break;
-                            }
-
                         } else {
+                            // printf("177: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             printf("[ERROR] type error \n");
                             error = true;
                         }
+                        sprintf($$.syntaxTree, "MULTIPLY{%s}{%s}", $1.syntaxTree, $3.syntaxTree);
                     }
                      | arithmetic_expression DIVIDE arithmetic_expression {
-                        if ($1.datatype == 1 && $3.datatype == 1) {
+                        if (($1.datatype == $3.datatype) || (($1.datatype == 2 && $3.datatype == 1) || ($1.datatype == 1 && $3.datatype == 2))) {
+                            // printf("Arith DIV: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = 2;
-                            $$.dval = $1.ival / (double)$3.ival;
-                        } 
-                        else if ($1.datatype == 2 && $3.datatype == 2) {
-                            $$.datatype = 2;
-                            $$.dval = $1.dval / $3.dval;
-                        }
-                        else if ($1.datatype == 1 && $3.datatype == 2) {
-                            $$.datatype = 2;
-                            $$.dval = (double)$1.ival / $3.dval;
-                        }
-                        else if ($1.datatype == 2 && $3.datatype == 1) {
-                            $$.datatype = 2;
-                            $$.dval = $1.dval / (double)$3.ival;
-                        }
-                        else {
+                        } else {
+                            // printf("186: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             printf("[ERROR] type error \n");
                             error = true;
                         }
+                        sprintf($$.syntaxTree, "DIVIDE{%s}{%s}", $1.syntaxTree, $3.syntaxTree);
                     }
                      | arithmetic_expression MODULO arithmetic_expression {
                         if ($1.datatype == 1 && $3.datatype == 1) {
+                            // printf("Arith MOD: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             $$.datatype = 1;
-                            $$.ival = $1.ival % $3.ival;
                         } else {
+                            // printf("195: $1: %d $3: %d\n", $1.datatype, $3.datatype);
                             printf("[ERROR] type error \n");
                             error = true;
                         }
+                        sprintf($$.syntaxTree, "MODULO{%s}{%s}", $1.syntaxTree, $3.syntaxTree);
                     }
                      | OPEN_BRACE arithmetic_expression CLOSED_BRACE {
                         $$.datatype = $2.datatype;
+                        sprintf($$.syntaxTree, "%s", $2.syntaxTree);
                      }
                      | primary_expression {
                         $$.datatype = $1.datatype;
+                        sprintf($$.syntaxTree, "%s", $1.syntaxTree);
                      }
                      ;
 
 relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expression {
                         $$.datatype = 3;
-
                         if (!(($1.datatype == 1 || $1.datatype == 2) && ($3.datatype == 1 || $3.datatype == 2))) {
                             printf("[ERROR] wrong type of operand(s) in a relational expression \n");
                             error = true;
                         }
-                        // have only bool
-                        switch($2.relop) {
-                            // relop: 1 = '=', 2 = '<=', 3 = '<', 4 = '>=', 5 = '>', 6 = '<>'
-                            case 1:
-                                $$.bval = $1.ival == $3.ival;
-                                break;
-                            case 2:
-                                $$.bval = $1.ival <= $3.ival;
-                                break; 
-                            case 3:
-                                $$.bval = $1.ival < $3.ival;
-                                break;
-                            case 4:
-                                $$.bval = $1.ival >= $3.ival;
-                                break;
-                            case 5:
-                                $$.bval = $1.ival > $3.ival;
-                                break;
-                            case 6:
-                                $$.bval = $1.ival != $3.ival;
-                                break;
-                        }
+                        sprintf($$.syntaxTree, "%s{%s}{%s}", $2.sval,  $1.syntaxTree, $3.syntaxTree);
                     }
                      | OPEN_BRACE relational_expression CLOSED_BRACE {
                         $$.datatype = $2.datatype;
-                        // have only bool
-                        $$.bval = $2.bval;
+                        sprintf($$.syntaxTree, "%s", $2.syntaxTree);
                      }
                      ;
 
 boolean_expression: expression BINARY_BOOL_OPERATOR expression {
                         $$.datatype = 3;
-
                         if (!(($1.datatype == 3) && ($3.datatype == 3))) {
                             printf("[ERROR] wrong type of operand(s) in a boolean expression \n");
                             error = true;
                         }
-
-                        switch($2.bool_op) {
-                            // bool_op: 1 = 'and', 2 = 'or'
-                            case 1:
-                                $$.bval = $1.bval && $3.bval;
-                                break;
-                            case 2:
-                                $$.bval = $1.bval || $3.bval;
-                                break;
-                        }
+                        sprintf($$.syntaxTree, "%s{%s}{%s}", $2.sval, $1.syntaxTree, $3.syntaxTree);
                     }
                   | UNARY_BOOL_OPERATOR expression {
                         $$.datatype = 3;
@@ -633,12 +428,11 @@ boolean_expression: expression BINARY_BOOL_OPERATOR expression {
                             printf("[ERROR] wrong type of operand in a boolean expression \n");
                             error = true;
                         }
-
-                        $$.bval = !$2.bval;
+                        sprintf($$.syntaxTree, "NOT{%s}", $2.syntaxTree);
                     }
                   | OPEN_BRACE boolean_expression CLOSED_BRACE {
                         $$.datatype = $2.datatype;
-                        $$.bval = $2.bval;
+                        sprintf($$.syntaxTree, "%s", $2.syntaxTree);
                      }
                   ;
 
@@ -652,68 +446,40 @@ primary_expression: identifier {
                             break;
                         }
                     }
-                    
-                    if(!error) {
-                        switch($1.datatype) {
-                            case 1:
-                                $$.ival = $1.ival;
-                                break;
-                            case 2:
-                                $$.dval = $1.dval;
-                                break;
-                            case 3:
-                                $$.bval = $1.bval;
-                                break;
-                            case 4:
-                                $$.cval = $1.cval;
-                                break;
-                        }
-                    }
-
+                    if (strlen($1.syntaxTree) == 0)
+                        sprintf($$.syntaxTree, "%s", $1.sval);
+                    else
+                        sprintf($$.syntaxTree, "%s", $1.syntaxTree);
+                    // sprintf($$.syntaxTree, "%s", $1.sval);
                   }
                   | INTEGER_CONST {
                     $$.datatype = 1;
                     $$.ival = (int)$1.ival;
+                    sprintf($$.syntaxTree, "%d", $1.ival);
                   }
                   | REAL_CONST {
                     $$.datatype = 2;
                     $$.dval = (float)$1.dval;
+                    sprintf($$.syntaxTree, "%f", $1.dval);
                   }
                   | CHARACTER_CONSTANT {
                     $$.datatype = 4;
                     $$.cval = (char)$1.cval;
+                    sprintf($$.syntaxTree, "%c", $1.cval);
                   }
                   ;
 
 identifier: IDENTIFIER {
                 bool flag = true;
+                char tempname[100];
                 for (int i=0; i<current_size; i++) {
                     if (strcmp(symbolTable[i].name, $1.sval) == 0) {
                         $1.datatype = symbolTable[i].datatype;
-
-                        switch($1.datatype) {
-                            case 1:
-                                // symbolTable[i].val.ival = $1.ival;
-                                $$.ival = symbolTable[i].val.ival;
-                                break;
-                            case 2:
-                                // symbolTable[i].val.dval = $1.dval;
-                                $$.dval = symbolTable[i].val.dval;
-                                break;
-                            case 3:
-                                // symbolTable[i].val.bval = $1.bval;
-                                $$.bval = symbolTable[i].val.bval;
-                                break;
-                            case 4:
-                                // symbolTable[i].val.cval = $1.cval;
-                                $$.cval = symbolTable[i].val.cval;
-                                break;
-                        }
-
                         flag = false;
                         if ($$.assigned) {
                             symbolTable[i].assigned = true;
                         }
+                        strcpy(tempname,symbolTable[i].name);
                         break;
                     }
                 }
@@ -722,37 +488,18 @@ identifier: IDENTIFIER {
                     printf("[ERROR] undeclared variable: %s\n", $1.sval);
                 }
                 $$.datatype = $1.datatype;
-
-                /*Changed @ 1:15PM May 2, remove if code breaks*/
-                strcpy($$.sval, $1.sval);
-
-                /* Assign Check Data Type */
-                
-                // switch($1.datatype) {
-                //     case 1:
-                //         $$.ival = $1.ival;
-                //         break;
-                //     case 2:
-                //         $$.dval = $1.dval;
-                //         break;
-                //     case 3:
-                //         $$.bval = $1.bval;
-                //         break;
-                //     case 4:
-                //         $$.cval = $1.cval;
-                //         break;
-                // }
-
-                /* Assign Check Data Type code ends here */
+                sprintf($$.syntaxTree, "%s", tempname);
+                sprintf($1.syntaxTree, "%s", tempname);
           }
           | IDENTIFIER SQUARE_OPEN expression SQUARE_CLOSE {
-                char temp[100];
+                char temp[100], tempname[100];
                 sprintf(temp, "%s[", $1.sval);
                 bool flag = true;
                 for (int i=0; i<current_size; i++) {
                     if (strncmp(symbolTable[i].name, temp, strlen(temp)) == 0) {
                         $1.datatype = symbolTable[i].datatype;
                         flag = false;
+                        strcpy(tempname,symbolTable[i].name);
                         break;
                     }
                 }
@@ -765,96 +512,26 @@ identifier: IDENTIFIER {
                     error = true;
                 }
                 $$.datatype = $1.datatype;
-
-                sprintf(temp, "%s[%d]", $1.sval, $3.ival);
-                for (int i=0; i<current_size; i++) {
-                    if (strcmp(symbolTable[i].name, temp) == 0) {
-                        switch(symbolTable[i].datatype) {
-                            case 1:
-                                $$.ival = symbolTable[i].val.ival;
-                                break;
-                            case 2:
-                                $$.dval = symbolTable[i].val.dval;
-                                break;
-                            case 3:
-                                $$.bval = symbolTable[i].val.bval;
-                                break;
-                            case 4:
-                                $$.cval = symbolTable[i].val.cval;
-                                break;
-                        }
-                    }
-                }
-
-                strcpy($$.sval, temp);
-
-                 /* Assign Check Data Type */
-                
-                // switch($1.datatype) {
-                //     case 1:
-                //         $$.ival = $1.ival;
-                //         break;
-                //     case 2:
-                //         $$.dval = $1.dval;
-                //         break;
-                //     case 3:
-                //         $$.bval = $1.bval;
-                //         break;
-                //     case 4:
-                //         $$.cval = $1.cval;
-                //         break;
-                // }
-
-                /* Assign Check Data Type code ends here */
+                sprintf($$.syntaxTree, "INDEX-AT{%s}{%s}", $1.sval, $3.syntaxTree);
+                sprintf($1.syntaxTree, "INDEX-AT{%s}{%s}", $1.sval, $3.syntaxTree);
           }
           ;
 
 output
     : output_list {
-        strcpy($$, $1);
+        sprintf($$.syntaxTree, "%s", $1.syntaxTree);
     }
     | STRING_CONSTANT {
-        strcpy($$, $1);
+        sprintf($$.syntaxTree, "%s", $1.sval);
     }
     ;
 
 output_list
     : expression {
-         switch($1.datatype) {
-            case 1:
-                sprintf($$, "%d", $1.ival);
-                break;
-            case 2:
-                sprintf($$, "%f", $1.dval);
-                break;
-            case 3:
-                sprintf($$, "%d", $1.bval);
-                break;
-            case 4:
-                sprintf($$, "%c", $1.cval);
-                break;
-        }
+        sprintf($$.syntaxTree, "%s", $1.syntaxTree);
     }
-    | output_list COMMA expression  {
-        char total_output[200];
-        char output_temp[100];
-        strcpy(total_output, $1);
-        switch($3.datatype) {
-            case 1:
-                sprintf(output_temp, ", %d", $3.ival);
-                break;
-            case 2:
-                sprintf(output_temp, ", %f", $3.dval);
-                break;
-            case 3:
-                sprintf(output_temp, ", %d", $3.bval);
-                break;
-            case 4:
-                sprintf(output_temp, ", %c", $3.cval);
-                break;
-        }
-        strcat(total_output, output_temp);
-        strcpy($$, total_output);
+    | output_list COMMA expression {
+        sprintf($$.syntaxTree, "%s}{%s", $1.syntaxTree, $3.syntaxTree);
     }
     ;
 
@@ -866,60 +543,30 @@ void yyerror(char *s) {
     exit(1);
 }
 
-void toLower(FILE* fptRead, FILE* fptWrite) {
+FILE* toLower(FILE* fptRead) {
+    fptWrite = fopen(".smallCase.txt", "w");
     char ch;
-    while ((ch = fgetc(fptRead)) != EOF) {    
+    while ((ch = fgetc(fptRead)) != EOF) {
         fputc(tolower(ch), fptWrite);
     }
-    return;
+    fclose(fptWrite);
+    return fopen(".smallCase.txt", "r");
+
 }
 
 int main(int argc, char *argv[]) {
-	fptRead = fopen(argv[1],"r+");
-    fptWrite = fopen(".smallCase.txt", "w");
-	toLower(fptRead, fptWrite);
+    fptRead = fopen(argv[1],"r+");
+    yyin = toLower(fptRead);
     fclose(fptRead);
-    fclose(fptWrite);
-
-    yyin = fopen(".smallCase.txt", "r");
 
     yyparse();
 
-    if (error) {
-        printf("Exiting because of semantic errors\n");
-        return 1;
-    }
+    if (error)
+        printf("No syntax errors found\nOne or more semantic errors found\n");
 
-    printf("Symbol Table\n");
-    printf("+-----------------------------------------+\n|     Variable     |   Type   |   Value   |\n|-----------------------------------------|\n");
+    FILE *fpt = fopen("syntaxTree.txt", "w");
+    fprintf(fpt, "%s", mainSyntaxTree);
+    fclose(fpt);
 
-    for (int i=0; i<current_size; i++) {
-        if (symbolTable[i].datatype == 1) {
-            if (symbolTable[i].assigned)
-                printf("| %16s |   %4s   | %9d |\n", symbolTable[i].name, "int", symbolTable[i].val.ival);
-            else 
-                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "int", "-");
-        }
-        else if (symbolTable[i].datatype == 2) {
-            if (symbolTable[i].assigned)
-                printf("| %16s |   %4s   | %9.4f |\n", symbolTable[i].name, "real", symbolTable[i].val.dval);
-            else 
-                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "real", "-");
-        }
-        else if (symbolTable[i].datatype == 3) {
-            if (symbolTable[i].assigned)
-                printf("| %16s |   %4s   | %9d |\n", symbolTable[i].name, "bool", symbolTable[i].val.ival);
-            else 
-                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "bool", "-");
-        }
-        else if (symbolTable[i].datatype == 4) {
-            if (symbolTable[i].assigned)
-                printf("| %16s |   %4s   | %9s |\n", symbolTable[i].name, "char", symbolTable[i].val.cval);
-            else 
-                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "char", "-");
-        }
-    };
-
-    printf("+-----------------------------------------+\n");
-
+    return 0;
 }
