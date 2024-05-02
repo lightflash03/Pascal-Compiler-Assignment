@@ -252,10 +252,18 @@ assignment
             }
             // printf("Assigned %s\n", $1.sval);
         }
-        if (strlen($1.syntaxTree) == 0)
-            sprintf($$.syntaxTree, "{ASSIGNMENT{%s{%s}}}", $1.sval, $3.syntaxTree);
-        else
-            sprintf($$.syntaxTree, "{ASSIGNMENT{%s{%s}}}", $1.syntaxTree, $3.syntaxTree);
+        if (strlen($1.syntaxTree) == 0){
+            if (strncmp($1.sval, "{", 1) == 0)
+                sprintf($$.syntaxTree, "{ASSIGNMENT%s{%s}}", $1.sval, $3.syntaxTree);
+            else
+                sprintf($$.syntaxTree, "{ASSIGNMENT{%s}{%s}}", $1.sval, $3.syntaxTree);
+        }
+        else {
+            if (strncmp($1.syntaxTree, "{", 1) == 0)
+                sprintf($$.syntaxTree, "{ASSIGNMENT%s{%s}}", $1.syntaxTree, $3.syntaxTree);
+            else
+                sprintf($$.syntaxTree, "{ASSIGNMENT{%s}{%s}}", $1.syntaxTree, $3.syntaxTree);
+        }
     }
     ;
 
@@ -512,8 +520,8 @@ identifier: IDENTIFIER {
                     error = true;
                 }
                 $$.datatype = $1.datatype;
-                sprintf($$.syntaxTree, "INDEX-AT{%s}{%s}", $1.sval, $3.syntaxTree);
-                sprintf($1.syntaxTree, "INDEX-AT{%s}{%s}", $1.sval, $3.syntaxTree);
+                sprintf($$.syntaxTree, "{INDEX-AT{%s}{%s}}", $1.sval, $3.syntaxTree);
+                sprintf($1.syntaxTree, "{INDEX-AT{%s}{%s}}", $1.sval, $3.syntaxTree);
           }
           ;
 

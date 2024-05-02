@@ -87,8 +87,13 @@ def evaluate_expression(tree):
 
         elif label == 'ASSIGNMENT':
             varname = tree[0].label()
-            val = evaluate_expression(tree[0][0])
-            var = lookup(varname)
+            # input(f"{varname}")
+            if varname == 'INDEX-AT':
+                var = lookup(f"{tree[0][0].label()}[{evaluate_expression(tree[0][1])}]")
+            else:
+                var = lookup(varname)
+
+            val = evaluate_expression(tree[1])
             var.value = val
 
         elif label == 'READ':
@@ -96,6 +101,7 @@ def evaluate_expression(tree):
             if varname == 'INDEX-AT':
                 var = lookup(f"{tree[0][0].label()}[{evaluate_expression(tree[0][1])}]")
             else:
+                # input(f"{varname}")
                 var = lookup(varname)
             if var.datatype == 'int':
                 var.value = int(input())
@@ -178,11 +184,13 @@ def evaluate_expression(tree):
             else:
                 return var.value
 
-try:
-    evaluate_expression(main_tree)
-except:
-    print("Runtime Error")
-    exit()
+evaluate_expression(main_tree)
+
+# try:
+#     evaluate_expression(main_tree)
+# except:
+#     print("Runtime Error")
+#     exit()
 
 print(f"┌────────────────┬────────────┬─────────────────────┐")
 print(f"│    Variable    │    Type    │        Value        │")
