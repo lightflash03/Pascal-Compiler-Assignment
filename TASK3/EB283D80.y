@@ -224,7 +224,11 @@ statement
         sprintf($$.syntaxTree, "{READ{%s}}", $3.syntaxTree);
     }
     | WRITE OPEN_BRACE output CLOSED_BRACE {
-        sprintf($$.syntaxTree, "{WRITE{%s}}", $3.syntaxTree);
+        if (strncmp($3.syntaxTree, "{", 1) == 0)
+            sprintf($$.syntaxTree, "{WRITE%s}", $3.syntaxTree);
+        else
+            sprintf($$.syntaxTree, "{WRITE{%s}}", $3.syntaxTree);
+        // sprintf($$.syntaxTree, "{WRITE{%s}}", $3.syntaxTree);
     }
     ;
 
@@ -527,7 +531,7 @@ identifier: IDENTIFIER {
 
 output
     : output_list {
-        sprintf($$.syntaxTree, "%s", $1.syntaxTree);
+        sprintf($$.syntaxTree, "{%s}", $1.syntaxTree);
     }
     | STRING_CONSTANT {
         sprintf($$.syntaxTree, "%s", $1.sval);

@@ -64,6 +64,7 @@ def lookup(name):
 
 def evaluate_expression(tree):
     label = tree.label()
+    # print(label)
     if label in keywords:
         if label == 'DECLARATION-STATEMENT':
             for child in tree:
@@ -112,7 +113,9 @@ def evaluate_expression(tree):
             elif var.datatype == 'char':
                 var.value = str(input())[0]
         elif label == 'WRITE':
-            print(evaluate_expression(tree[0]))
+            # input("YES NIGA?")
+            for child in tree:
+                print(evaluate_expression(child))
 
         elif label == 'ADD':
             return evaluate_expression(tree[0]) + evaluate_expression(tree[1])
@@ -169,8 +172,12 @@ def evaluate_expression(tree):
                 for var.value in range(start, end+1):
                     evaluate_expression(tree[1][0])
         else:
+            # print(label, "not implemented")
             for child in tree:
                 evaluate_expression(child)
+    elif label == "":
+        for child in tree:
+            evaluate_expression(child)
     else:
         if bool(re.search(r'\d', label)):
             if '.' in label:
