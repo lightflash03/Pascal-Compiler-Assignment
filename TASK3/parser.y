@@ -543,59 +543,26 @@ void yyerror(char *s) {
     exit(1);
 }
 
-void toLower(FILE* fptRead, FILE* fptWrite) {
+FILE* toLower(FILE* fptRead) {
+    fptWrite = fopen(".smallCase.txt", "w");
     char ch;
-    while ((ch = fgetc(fptRead)) != EOF) {    
+    while ((ch = fgetc(fptRead)) != EOF) {
         fputc(tolower(ch), fptWrite);
     }
-    return;
+    fclose(fptWrite);
+    return fopen(".smallCase.txt", "r");
+
 }
 
 int main(int argc, char *argv[]) {
-	fptRead = fopen(argv[1],"r+");
-    fptWrite = fopen(".smallCase.txt", "w");
-	toLower(fptRead, fptWrite);
+    fptRead = fopen(argv[1],"r+");
+    yyin = toLower(fptRead);
     fclose(fptRead);
-    fclose(fptWrite);
-
-    yyin = fopen(".smallCase.txt", "r");
 
     yyparse();
 
     if (error)
         printf("No syntax errors found\nOne or more semantic errors found\n");
-
-    // printf("Symbol Table\n");
-    // printf("+-----------------------------------------+\n|     Variable     |   Type   |   Value   |\n|-----------------------------------------|\n");
-
-    // for (int i=0; i<current_size; i++) {
-    //     if (symbolTable[i].datatype == 1) {
-    //         if (symbolTable[i].assigned)
-    //             printf("| %16s |   %4s   | %9d |\n", symbolTable[i].name, "int", symbolTable[i].val.ival);
-    //         else 
-    //             printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "int", "-");
-    //     }
-    //     else if (symbolTable[i].datatype == 2) {
-    //         if (symbolTable[i].assigned)
-    //             printf("| %16s |   %4s   | %9.4f |\n", symbolTable[i].name, "real", symbolTable[i].val.dval);
-    //         else 
-    //             printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "real", "-");
-    //     }
-    //     else if (symbolTable[i].datatype == 3) {
-    //         if (symbolTable[i].assigned)
-    //             printf("| %16s |   %4s   | %9d |\n", symbolTable[i].name, "bool", symbolTable[i].val.ival);
-    //         else 
-    //             printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "bool", "-");
-    //     }
-    //     else if (symbolTable[i].datatype == 4) {
-    //         if (symbolTable[i].assigned)
-    //             printf("| %16s |   %4s   | %9s |\n", symbolTable[i].name, "char", symbolTable[i].val.sval);
-    //         else 
-    //             printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "char", "-");
-    //     }
-    // };
-
-    // printf("+-----------------------------------------+\n");
 
     FILE *fpt = fopen("syntaxTree.txt", "w");
     fprintf(fpt, "%s", mainSyntaxTree);
