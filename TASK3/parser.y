@@ -39,7 +39,7 @@ bool error = false;
         int ival;
         float dval;
         char cval;
-        char *sval;
+        char sval[100];
         bool declared;
         bool assigned;
         char syntaxTree[10000];
@@ -53,7 +53,7 @@ bool error = false;
         int second_ival;
         float dval;
         char cval;
-        char *sval;
+        char sval[100];
         bool declared;
         bool assigned;
         char syntaxTree[10000];
@@ -63,11 +63,11 @@ bool error = false;
 }
 
 %token <attr> INTEGER_CONST REAL_CONST CHARACTER_CONSTANT IDENTIFIER DATA_TYPE RELATIONAL_OPERATOR BINARY_BOOL_OPERATOR UNARY_BOOL_OPERATOR
-%token <arr_attr> ARRAY_DATA_TYPE
+%token <arr_attr> ARRAY_DATA_TYPE TO
 
 %type <attr> expression primary_expression arithmetic_expression relational_expression boolean_expression identifier statements statement program declarations multiple_lines declaration_line assignment conditional loop output output_list multiple_identifiers
 
-%token SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO PROGRAM VAR TO DOWNTO IF THEN ELSE WHILE FOR DO TOKEN_BEGIN END READ WRITE STRING_CONSTANT PUNCTUATOR
+%token SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO PROGRAM VAR IF THEN ELSE WHILE FOR DO TOKEN_BEGIN END READ WRITE STRING_CONSTANT PUNCTUATOR
 
 %left BINARY_BOOL_OPERATOR
 %left RELATIONAL_OPERATOR
@@ -284,51 +284,31 @@ loop
         }
         sprintf($$.syntaxTree, "{WHILE{CONDITION{%s}}{STATEMENTS%s}}", $2.syntaxTree, $5.syntaxTree);
     }
-    | FOR identifier ASSIGN expression DOWNTO expression DO TOKEN_BEGIN statements END {
-        if (!($4.datatype == 1 && $6.datatype == 1)) {
+    | FOR identifier {
+        bool flag = true;
+        for (int i=0; i<current_size; i++) {
+            if (strcmp(symbolTable[i].name, $2.sval) == 0) {
+                flag = false;
+                symbolTable[i].assigned = true;
+                break;
+            }
+        }
+        if (flag) {
+            error = true;
+            printf("[ERROR] undeclared variable: %s\n", $2.sval);
+        }
+    } ASSIGN expression TO expression DO TOKEN_BEGIN statements END {
+        if (!($5.datatype == 1 && $7.datatype == 1)) {
             printf("[ERROR] wrong type of expression in a for loop \n");
             error = true;
         } else if (!($2.datatype == 1)) {
             printf("[ERROR] wrong type of variable in a for loop \n");
             error = true;
-        } else {
-            bool flag = true;
-            for (int i=0; i<current_size; i++) {
-                if (strcmp(symbolTable[i].name, $2.sval) == 0) {
-                    flag = false;
-                    symbolTable[i].assigned = true;
-                    break;
-                }
-            }
-            if (flag) {
-                error = true;
-                printf("[ERROR] undeclared variable: %s\n", $2.sval);
-            }
         }
-        sprintf($$.syntaxTree, "{FOR{CONDITION{%s{DOWN-TO{%s}{%s}}}}{STATEMENTS%s}}", $2.syntaxTree, $4.syntaxTree, $6.syntaxTree, $9.syntaxTree);
-    }
-    | FOR identifier ASSIGN expression TO expression DO TOKEN_BEGIN statements END {
-        if (!($4.datatype == 1 && $6.datatype == 1)) {
-            printf("[ERROR] wrong type of expression in a for loop \n");
-            error = true;
-        } else if (!($2.datatype == 1)) {
-            printf("[ERROR] wrong type of variable in a for loop \n");
-            error = true;
-        } else {
-            bool flag = true;
-            for (int i=0; i<current_size; i++) {
-                if (strcmp(symbolTable[i].name, $2.sval) == 0) {
-                    flag = false;
-                    symbolTable[i].assigned = true;
-                    break;
-                }
-            }
-            if (flag) {
-                error = true;
-                printf("[ERROR] undeclared variable: %s\n", $2.sval);
-            }
-        }
-        sprintf($$.syntaxTree, "{FOR{CONDITION{%s{TO{%s}{%s}}}}{STATEMENTS%s}}", $2.syntaxTree, $4.syntaxTree, $6.syntaxTree, $9.syntaxTree);
+        if (strcmp($7.sval,"TO") == 0)
+            sprintf($$.syntaxTree, "{FOR{CONDITION{%s{TO{%s}{%s}}}}{STATEMENTS%s}}", $2.syntaxTree, $5.syntaxTree, $7.syntaxTree, $10.syntaxTree);
+        else if (strcmp($7.sval,"DOWNTO") == 0)
+            sprintf($$.syntaxTree, "{FOR{CONDITION{%s{DOWN-TO{%s}{%s}}}}{STATEMENTS%s}}", $2.syntaxTree, $5.syntaxTree, $7.syntaxTree, $10.syntaxTree);
     }
     ;
 
@@ -588,37 +568,37 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    printf("Symbol Table\n");
-    printf("+-----------------------------------------+\n|     Variable     |   Type   |   Value   |\n|-----------------------------------------|\n");
+    // printf("Symbol Table\n");
+    // printf("+-----------------------------------------+\n|     Variable     |   Type   |   Value   |\n|-----------------------------------------|\n");
 
-    for (int i=0; i<current_size; i++) {
-        if (symbolTable[i].datatype == 1) {
-            if (symbolTable[i].assigned)
-                printf("| %16s |   %4s   | %9d |\n", symbolTable[i].name, "int", symbolTable[i].val.ival);
-            else 
-                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "int", "-");
-        }
-        else if (symbolTable[i].datatype == 2) {
-            if (symbolTable[i].assigned)
-                printf("| %16s |   %4s   | %9.4f |\n", symbolTable[i].name, "real", symbolTable[i].val.dval);
-            else 
-                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "real", "-");
-        }
-        else if (symbolTable[i].datatype == 3) {
-            if (symbolTable[i].assigned)
-                printf("| %16s |   %4s   | %9d |\n", symbolTable[i].name, "bool", symbolTable[i].val.ival);
-            else 
-                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "bool", "-");
-        }
-        else if (symbolTable[i].datatype == 4) {
-            if (symbolTable[i].assigned)
-                printf("| %16s |   %4s   | %9s |\n", symbolTable[i].name, "char", symbolTable[i].val.sval);
-            else 
-                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "char", "-");
-        }
-    };
+    // for (int i=0; i<current_size; i++) {
+    //     if (symbolTable[i].datatype == 1) {
+    //         if (symbolTable[i].assigned)
+    //             printf("| %16s |   %4s   | %9d |\n", symbolTable[i].name, "int", symbolTable[i].val.ival);
+    //         else 
+    //             printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "int", "-");
+    //     }
+    //     else if (symbolTable[i].datatype == 2) {
+    //         if (symbolTable[i].assigned)
+    //             printf("| %16s |   %4s   | %9.4f |\n", symbolTable[i].name, "real", symbolTable[i].val.dval);
+    //         else 
+    //             printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "real", "-");
+    //     }
+    //     else if (symbolTable[i].datatype == 3) {
+    //         if (symbolTable[i].assigned)
+    //             printf("| %16s |   %4s   | %9d |\n", symbolTable[i].name, "bool", symbolTable[i].val.ival);
+    //         else 
+    //             printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "bool", "-");
+    //     }
+    //     else if (symbolTable[i].datatype == 4) {
+    //         if (symbolTable[i].assigned)
+    //             printf("| %16s |   %4s   | %9s |\n", symbolTable[i].name, "char", symbolTable[i].val.sval);
+    //         else 
+    //             printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "char", "-");
+    //     }
+    // };
 
-    printf("+-----------------------------------------+\n");
+    // printf("+-----------------------------------------+\n");
 
     FILE *fpt = fopen("syntaxTree.txt", "w");
     fprintf(fpt, "%s", mainSyntaxTree);

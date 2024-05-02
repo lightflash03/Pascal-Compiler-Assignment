@@ -15,8 +15,6 @@ gcc y.tab.c lex.yy.c -w -ly -o parser
 return_value=$?
 
 if [ $return_value -eq 0 ]; then
-    echo "No syntax errors found"
-    echo "No semantic errors found"
     echo "Printing Syntax Tree..."
     python3 tree.py
 fi

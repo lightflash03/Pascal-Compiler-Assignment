@@ -62,22 +62,22 @@ int start_array = 0, end_array = 0;
 "="|"<"|">"|"<="|">="|"<>" {
     switch (yytext[0]) {
         case '=':
-            yylval.attr.sval = "EQUALS";
+            strcpy(yylval.attr.sval,"EQUALS");
             break;
         case '<':
             if (yytext[1] == '=') {
-                yylval.attr.sval = "LESS-THAN-OR-EQUAL-TO";
+                strcpy(yylval.attr.sval,"LESS-THAN-OR-EQUAL-TO");
             } else if (yytext[1] == '>') {
-                yylval.attr.sval = "NOT-EQUALS";
+                strcpy(yylval.attr.sval,"NOT-EQUALS");
             } else {
-                yylval.attr.sval = "LESS-THAN";
+                strcpy(yylval.attr.sval,"LESS-THAN");
             }
             break;
         case '>':
             if (yytext[1] == '=') {
-                yylval.attr.sval = "GREATER-THAN-OR-EQUAL-TO";
+                strcpy(yylval.attr.sval,"GREATER-THAN-OR-EQUAL-TO");
             } else {
-                yylval.attr.sval = "GREATER-THAN";
+                strcpy(yylval.attr.sval,"GREATER-THAN");
             }
             break;
     }
@@ -90,9 +90,9 @@ int start_array = 0, end_array = 0;
 
 "and"|"or" {
     if (strcmp(strdup(yytext), "and") == 0) {
-        yylval.attr.sval = "AND";
+        strcpy(yylval.attr.sval, "AND");
     } else if (strcmp(strdup(yytext), "or") == 0) {
-        yylval.attr.sval = "OR";
+        strcpy(yylval.attr.sval, "OR");
     }
     return BINARY_BOOL_OPERATOR;
 }
@@ -167,11 +167,13 @@ int start_array = 0, end_array = 0;
 }
 
 "to" {
+    strcpy(yylval.attr.sval,"TO");
     return TO;
 }
 
 "downto" {
-    return DOWNTO;
+    strcpy(yylval.attr.sval,"DOWNTO");
+    return TO;
 }
 
 "if" {
@@ -225,7 +227,7 @@ int start_array = 0, end_array = 0;
 }
 
 [a-zA-Z][a-zA-Z0-9_]*   {
-    yylval.attr.sval = strdup(yytext);
+    strcpy(yylval.attr.sval,strdup(yytext));
     return IDENTIFIER;
 }
 
