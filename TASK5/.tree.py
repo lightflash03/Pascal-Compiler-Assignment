@@ -64,7 +64,6 @@ def lookup(name):
 
 def evaluate_expression(tree):
     label = tree.label()
-    # print(label)
     if label in keywords:
         if label == 'DECLARATION-STATEMENT':
             for child in tree:
@@ -88,7 +87,6 @@ def evaluate_expression(tree):
 
         elif label == 'ASSIGNMENT':
             varname = tree[0].label()
-            # input(f"{varname}")
             if varname == 'INDEX-AT':
                 var = lookup(f"{tree[0][0].label()}[{evaluate_expression(tree[0][1])}]")
             else:
@@ -176,7 +174,6 @@ def evaluate_expression(tree):
                         evaluate_expression(child)
         elif label == 'STATEMENTS':
             for child in tree:
-                print(child.label())
                 evaluate_expression(child)
         else:
             for child in tree:
