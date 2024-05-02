@@ -4,6 +4,9 @@
 #include "y.tab.h"
 
 int start_array = 0, end_array = 0;
+
+char tempString[100];
+
 %}
 
 %x START_QUOTE 
@@ -260,10 +263,13 @@ int start_array = 0, end_array = 0;
 }
 
 <START_QUOTE>[^\"]* {
+    strcpy(tempString,strdup(yytext));
     BEGIN ANY_STRING;
+
 }
 
 <ANY_STRING>\" {
+    strcpy(yylval.attr.sval, tempString);
     BEGIN INITIAL;
     return STRING_CONSTANT; 
 }

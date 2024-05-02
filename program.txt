@@ -1,15 +1,13 @@
-program MaxValueArray;
+program NumberOfDigits;
 var
-  numbers: array[1..10] of Integer;
-  i, j, maxValue: Integer;
-  k: rEAL;
+  d,e: integer;
+  c: real;
+  g: boolean;
+  f: char;
 begin
-  j := 8;
-  if j = 8 then
-  begin
-    j := 9;
-  end;
-  k := 8 + 762 + 863 + 78.5 + j;
-  k := 3 + k / 8 * 15;
-  i := j % 8;
+  d := 5;
+  e := 6;
+  c := d + e + 7;
+  g := (3 <= 4);
+  f := 'r';
 end.
