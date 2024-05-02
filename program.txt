@@ -1,6 +1,10 @@
 program NumberOfDigits;
 var
-  c,d: boolean;
+  d: array[1..5] of integer;
+  c,e: integer;
 begin
-  d := (3 <= 4) or (not ((6 > 7)));
+  for c := 5 to 10 do
+  begin
+   WRITE(c * 2);
+  end;
 end.
