@@ -220,7 +220,7 @@ char full_string[150] = "";
     return WRITE;
 }
 
-[0-9]+ {
+[-]?[0-9]+ {
     yylval.attr.ival = atoi(yytext);
     return INTEGER_CONST;
 }

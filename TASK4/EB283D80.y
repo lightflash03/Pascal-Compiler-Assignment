@@ -230,22 +230,22 @@ statement
                 
                 switch(symbolTable[i].datatype) {
                     case 1:
-                        scanf("%d", &symbolTable[i].val.ival);
+                        // scanf("%d", &symbolTable[i].val.ival);
                         $3.datatype = 1;
                         $3.ival = symbolTable[i].val.ival;
                         break;
                     case 2:
-                        scanf("%f", &symbolTable[i].val.dval);
+                        // scanf("%f", &symbolTable[i].val.dval);
                         $3.datatype = 2;
                         $3.dval = symbolTable[i].val.dval;
                         break;
                     case 3:
-                        scanf("%d", &symbolTable[i].val.bval);
+                        // scanf("%d", &symbolTable[i].val.bval);
                         $3.datatype = 3;
                         $3.bval = symbolTable[i].val.bval;
                         break;
                     case 4:
-                        scanf("%c", &symbolTable[i].val.cval);
+                        // scanf("%c", &symbolTable[i].val.cval);
                         $3.datatype = 4;
                         $3.cval = symbolTable[i].val.cval;
                         break;
@@ -277,55 +277,7 @@ assignment
                 printf("[ERROR] type error \n");
                 error = true;
             }
-        } else {
-            for (int i=0; i<current_size; i++) {
-                // printf("Symbol Table name: %s. Identifier name: %s\n", symbolTable[i].name, $1.sval);
-                if (strcmp(symbolTable[i].name, $1.sval) == 0) {
-                    // printf("Symbol Table name: %s. Identifier name: %s\n", symbolTable[i].name, $1.sval);
-                    symbolTable[i].assigned = true;
-
-                    switch($1.datatype) {
-                            case 1:
-                                if ($1.datatype == $3.datatype) {
-                                    symbolTable[i].val.ival = $3.ival;
-                                    $1.datatype = $3.datatype;
-                                    $1.ival = $3.ival;
-                                }
-                                else if ($1.datatype == 2 && $3.datatype == 1) {
-                                    symbolTable[i].val.dval = (float)$3.ival;
-                                    $1.datatype = 2;
-                                    $1.dval = (int)$3.dval;
-                                }
-                                else {
-                                    symbolTable[i].val.dval = $3.dval;
-                                    $1.datatype = 2;
-                                    $1.dval = (int)$3.dval;
-                                }
-                                break;
-                            case 2:
-                                if ($3.datatype == 1) {
-                                    symbolTable[i].val.dval = (float)$3.ival;
-                                    $1.datatype = 2;
-                                    $1.dval = (int)$3.ival;
-                                } else {
-                                    symbolTable[i].val.dval = $3.dval;
-                                    $1.datatype = 2;
-                                    $1.dval = $3.dval;
-                                }
-                                break;
-                            case 3:
-                                symbolTable[i].val.bval = $3.bval;
-                                $1.bval = $3.bval;
-                                break;
-                            case 4:
-                                symbolTable[i].val.cval = $3.cval;
-                                $1.cval = $3.cval;
-                                break;
-                        }
-                    break;
-                }
-            }
-        }
+        } 
     }
     ;
 
@@ -385,26 +337,8 @@ loop
     ;
 
 expression: arithmetic_expression {
-
             $$.datatype = $1.datatype;
-
-            switch($1.datatype) {
-                case 1:
-                    $$.ival = $1.ival;
-                    break;
-                case 2:
-                    $$.dval = $1.dval;
-                    break;
-                case 3:
-                    $$.bval = $1.bval;
-                    break;
-                case 4:
-                    $$.cval = $1.cval;
-                    break;
-            }
-
             strcpy($$.sval, $1.sval);
-
           }
           | relational_expression {
             $$.datatype = $1.datatype;
@@ -418,6 +352,7 @@ expression: arithmetic_expression {
             $$.datatype = $1.datatype;
             // Returns only bool
             $$.bval = $1.bval;
+            strcpy($$.sval, $1.sval);
           }
           ;
 
@@ -602,7 +537,8 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                             $$.dval = $1.dval / (double)$3.ival;
 
                             compute = true;
-                            char str[5], str1[5]="t"; 
+                            char str[5], str1[5];
+                            strcpy(str1, "t"); 
                             sprintf(str,"%d", temp_char++);
                             strcat(str1, str); 
                             addQuadruple(pop(), "/", pop(), str1);
@@ -638,29 +574,24 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                         $$.datatype = $1.datatype;
                         strcpy($$.sval, $1.sval);
 
-                        switch($1.datatype) {
-                            case 1:
-                                $$.ival = $1.ival;
-                                break;
-                            case 2:
-                                $$.dval = $1.dval;
-                                break;
-                            case 3:
-                                $$.bval = $1.bval;
-                                break;
-                            case 4:
-                                $$.cval = $1.cval;
-                                break;
-                        }
+                        // switch($1.datatype) {
+                        //     case 1:
+                        //         $$.ival = $1.ival;
+                        //         break;
+                        //     case 2:
+                        //         $$.dval = $1.dval;
+                        //         break;
+                        //     case 3:
+                        //         $$.bval = $1.bval;
+                        //         break;
+                        //     case 4:
+                        //         $$.cval = $1.cval;
+                        //         break;
+                        // }
 
-                        char c[50]; 
-                        strcpy(c, $1.sval);
-
-                        // printf("Array Value: %s\n", c); 
-
-                        // printf("intoArray: %d --- to be pushed: %s\n", intoArray, c);
-                        // if(!intoArray && compute)
-                        push(c);
+                        // char c[50]; 
+                        // strcpy(c, $1.sval);
+                        // push(c);
 
                         intoArray = false;
                      }
@@ -679,31 +610,72 @@ relational_expression: arithmetic_expression RELATIONAL_OPERATOR arithmetic_expr
                             case 1:
                                 $$.bval = $1.ival == $3.ival;
                                 sprintf($$.sval, "%s == %s", $1.sval, $3.sval);
+                                compute = true;
+                                char str[5], str1[5]="t"; 
+                                sprintf(str,"%d", temp_char++);
+                                strcat(str1, str);
+                                addQuadruple(pop(), "==", pop(), str1);
+                                display_Quad(); 
+                                push(str1);
                                 // printf("$3: %s, $1: %s\n", $3.sval, $1.sval);
                                 break;
                             case 2:
                                 $$.bval = $1.ival <= $3.ival;
                                 sprintf($$.sval, "%s <= %s", $1.sval, $3.sval);
+                                compute = true;
+                                strcpy(str1, "t"); 
+                                sprintf(str,"%d", temp_char++);
+                                strcat(str1, str); 
+                                addQuadruple(pop(), "<=", pop(), str1);
+                                display_Quad(); 
+                                push(str1);
                                 break; 
                             case 3:
                                 $$.bval = $1.ival < $3.ival;
                                 sprintf($$.sval, "%s < %s", $1.sval, $3.sval);
+                                compute = true;
+                                strcpy(str1, "t"); 
+                                sprintf(str,"%d", temp_char++);
+                                strcat(str1, str); 
+                                addQuadruple(pop(), "<", pop(), str1);
+                                display_Quad(); 
+                                push(str1);
                                 break;
                             case 4:
                                 $$.bval = $1.ival >= $3.ival;
                                 sprintf($$.sval, "%s >= %s", $1.sval, $3.sval);
+                                compute = true;
+                                strcpy(str1, "t"); 
+                                sprintf(str,"%d", temp_char++);
+                                strcat(str1, str); 
+                                addQuadruple(pop(), ">=", pop(), str1);
+                                display_Quad(); 
+                                push(str1);
                                 break;
                             case 5:
                                 $$.bval = $1.ival > $3.ival;
                                 sprintf($$.sval, "%s > %s", $1.sval, $3.sval);
+                                compute = true;
+                                strcpy(str1, "t"); 
+                                sprintf(str,"%d", temp_char++);
+                                strcat(str1, str); 
+                                addQuadruple(pop(), ">", pop(), str1);
+                                display_Quad(); 
+                                push(str1);
                                 break;
                             case 6:
                                 $$.bval = $1.ival != $3.ival;
                                 sprintf($$.sval, "%s != %s", $1.sval, $3.sval);
+                                compute = true;
+                                strcpy(str1, "t"); 
+                                sprintf(str,"%d", temp_char++);
+                                strcat(str1, str); 
+                                addQuadruple(pop(), "!=", pop(), str1);
+                                display_Quad(); 
+                                push(str1);
                                 break;
                         }
-
-
+                        
                     }
                      | OPEN_BRACE relational_expression CLOSED_BRACE {
                         $$.datatype = $2.datatype;
@@ -724,9 +696,23 @@ boolean_expression: expression BINARY_BOOL_OPERATOR expression {
                             // bool_op: 1 = 'and', 2 = 'or'
                             case 1:
                                 $$.bval = $1.bval && $3.bval;
+                                compute = true;
+                                char str[5], str1[5]="t"; 
+                                sprintf(str,"%d", temp_char++);
+                                strcat(str1, str); 
+                                addQuadruple(pop(), "&&", pop(), str1);
+                                display_Quad(); 
+                                push(str1);
                                 break;
                             case 2:
                                 $$.bval = $1.bval || $3.bval;
+                                compute = true;
+                                str1[5]="t"; 
+                                sprintf(str,"%d", temp_char++);
+                                strcat(str1, str); 
+                                addQuadruple(pop(), "||", pop(), str1);
+                                display_Quad(); 
+                                push(str1);
                                 break;
                         }
                     }
@@ -736,8 +722,6 @@ boolean_expression: expression BINARY_BOOL_OPERATOR expression {
                             printf("[ERROR] wrong type of operand in a boolean expression \n");
                             error = true;
                         }
-
-                        $$.bval = !$2.bval;
                     }
                   | OPEN_BRACE boolean_expression CLOSED_BRACE {
                         $$.datatype = $2.datatype;
@@ -747,22 +731,22 @@ boolean_expression: expression BINARY_BOOL_OPERATOR expression {
 
 primary_expression: identifier {
                     
-                    if(!error) {
-                        switch($1.datatype) {
-                            case 1:
-                                $$.ival = $1.ival;
-                                break;
-                            case 2:
-                                $$.dval = $1.dval;
-                                break;
-                            case 3:
-                                $$.bval = $1.bval;
-                                break;
-                            case 4:
-                                $$.cval = $1.cval;
-                                break;
-                        }
-                    }
+                    // if(!error) {
+                    //     switch($1.datatype) {
+                    //         case 1:
+                    //             $$.ival = $1.ival;
+                    //             break;
+                    //         case 2:
+                    //             $$.dval = $1.dval;
+                    //             break;
+                    //         case 3:
+                    //             $$.bval = $1.bval;
+                    //             break;
+                    //         case 4:
+                    //             $$.cval = $1.cval;
+                    //             break;
+                    //     }
+                    // }
 
                     strcpy($$.sval, $1.sval);
 
@@ -771,16 +755,25 @@ primary_expression: identifier {
                     $$.datatype = 1;
                     // $$.ival = (int)$1.ival;
                     sprintf($$.sval, "%d", $1.ival);
+                    char c[50]; 
+                    strcpy(c, $$.sval);
+                    push(c);
                   }
                   | REAL_CONST {
                     $$.datatype = 2;
                     // $$.dval = (float)$1.dval;
                     sprintf($$.sval, "%f", $1.dval);
+                    char c[50]; 
+                    strcpy(c, $$.sval);
+                    push(c);
                   }
                   | CHARACTER_CONSTANT {
                     $$.datatype = 4;
                     // $$.cval = (char)$1.cval;
                     sprintf($$.sval, "%c", $1.cval);
+                    char c[50]; 
+                    strcpy(c, $$.sval);
+                    push(c);
                   }
                   ;
 
@@ -826,6 +819,10 @@ identifier: IDENTIFIER {
                 /*Changed @ 1:15PM May 2, remove if code breaks*/
                 // printf("Identifier: %s\n", $$.sval);
                 strcpy($$.sval, $1.sval);
+
+                char c[50]; 
+                strcpy(c, $1.sval);
+                push(c);
 
                 /* Assign Check Data Type */
                 
@@ -876,26 +873,30 @@ identifier: IDENTIFIER {
                 // printf("onlyName: %s\n", onlyName);
 
                 sprintf(temp, "%s[%d]", $1.sval, $3.ival);
-                for (int i=0; i<current_size; i++) {
-                    if (strcmp(symbolTable[i].name, temp) == 0) {
-                        switch(symbolTable[i].datatype) {
-                            case 1:
-                                $$.ival = symbolTable[i].val.ival;
-                                break;
-                            case 2:
-                                $$.dval = symbolTable[i].val.dval;
-                                break;
-                            case 3:
-                                $$.bval = symbolTable[i].val.bval;
-                                break;
-                            case 4:
-                                $$.cval = symbolTable[i].val.cval;
-                                break;
-                        }
-                    }
-                }
+                // for (int i=0; i<current_size; i++) {
+                //     if (strcmp(symbolTable[i].name, temp) == 0) {
+                //         switch(symbolTable[i].datatype) {
+                //             case 1:
+                //                 $$.ival = symbolTable[i].val.ival;
+                //                 break;
+                //             case 2:
+                //                 $$.dval = symbolTable[i].val.dval;
+                //                 break;
+                //             case 3:
+                //                 $$.bval = symbolTable[i].val.bval;
+                //                 break;
+                //             case 4:
+                //                 $$.cval = symbolTable[i].val.cval;
+                //                 break;
+                //         }
+                //     }
+                // }
                 
                 strcpy($$.sval, temp);
+
+                char c[50]; 
+                strcpy(c, $$.sval);
+                push(c);
                 // printf("%s\n", $$.sval);
 
                  /* Assign Check Data Type */
