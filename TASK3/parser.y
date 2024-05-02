@@ -199,8 +199,12 @@ statement
     : assignment {
         sprintf($$.syntaxTree, "%s", $1.syntaxTree);
     }
-    | conditional
-    | loop
+    | conditional {
+        sprintf($$.syntaxTree, "%s", $1.syntaxTree);
+    }
+    | loop {
+        sprintf($$.syntaxTree, "%s", $1.syntaxTree);
+    }
     | READ OPEN_BRACE identifier CLOSED_BRACE {
         for (int i=0; i<current_size; i++) {
             if (strcmp(symbolTable[i].name, $3.sval) == 0) {
@@ -486,15 +490,21 @@ identifier: IDENTIFIER {
           ;
 
 output
-    : output_list
+    : output_list {
+        sprintf($$.syntaxTree, "%s", $1.syntaxTree);
+    }
     | STRING_CONSTANT {
-
+        
     }
     ;
 
 output_list
-    : expression
-    | output_list COMMA expression
+    : expression {
+        sprintf($$.syntaxTree, "%s", $1.syntaxTree);
+    }
+    | output_list COMMA expression {
+        sprintf($$.syntaxTree, "%s][%s", $1.syntaxTree, $3.syntaxTree);
+    }
     ;
 
 
