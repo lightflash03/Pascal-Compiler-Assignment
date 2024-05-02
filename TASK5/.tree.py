@@ -113,7 +113,6 @@ def evaluate_expression(tree):
             elif var.datatype == 'char':
                 var.value = str(input())[0]
         elif label == 'WRITE':
-            # input("YES NIGA?")
             for child in tree:
                 print(evaluate_expression(child))
 
@@ -166,13 +165,20 @@ def evaluate_expression(tree):
             start = evaluate_expression(tree[0][0][0][0])
             end = evaluate_expression(tree[0][0][0][1])
             if (tree[0][0][0].label() == 'DOWN-TO'):
-                for var.value in reversed(list(range(end, start+1))):
-                    evaluate_expression(tree[1][0])
+                for i in reversed(list(range(end, start+1))):
+                    var.value = i
+                    for child in tree[1]:
+                        evaluate_expression(child)
             else:
-                for var.value in range(start, end+1):
-                    evaluate_expression(tree[1][0])
+                for i in range(start, end+1):
+                    var.value = i
+                    for child in tree[1]:
+                        evaluate_expression(child)
+        elif label == 'STATEMENTS':
+            for child in tree:
+                print(child.label())
+                evaluate_expression(child)
         else:
-            # print(label, "not implemented")
             for child in tree:
                 evaluate_expression(child)
     elif label == "":
@@ -204,17 +210,24 @@ print(f"│    Variable    │    Type    │        Value        │")
 print(f"├────────────────┼────────────┼─────────────────────┤")
 for symbol in symbolTable:
     if symbol.datatype == 'int':
-        if symbol.value:
+        if symbol.value != None:
             print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{symbol.value:^21d}│")
         else:
             print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'-':^21s}│")
     elif symbol.datatype == 'real':
-        print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{symbol.value if symbol.value else 0.:^21f}│")
+        if symbol.value != None:
+            print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{symbol.value:^21f}│")
+        else:
+            print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'-':^21s}│")
     elif symbol.datatype == 'bool':
-        if symbol.value == None:
+        if symbol.value != None:
             print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'true' if symbol.value else 'false':^21s}│")
         else:
             print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'-':^21s}│")
     elif symbol.datatype == 'char':
-        print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{str(symbol.value) if symbol.value else '-':^21s}│")
+        if symbol.value != None:
+            print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{symbol.value:^21s}│")
+        else:
+            print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'-':^21s}│")
+
 print(f"└────────────────┴────────────┴─────────────────────┘")
