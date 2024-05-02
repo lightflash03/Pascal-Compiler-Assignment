@@ -9,31 +9,21 @@ Team Members:
 
 Structure of Submission:
 
-We have 2 folders, named TASK1 and TASK2, each with the files required to run the required tasks asked for in the Assignment
-Please create a file named program.txt in the folder where README.txt exists. That is, the program.txt file should be hierarchially one folder above the lex and yacc files, which are in the TASK folders.
+We have, in our submission, 3 folders: 
+1. TASK3
+2. TASK4
+3. TASK5
 
-Method to Run:
+And one file: 
 
-Open the Terminal in the folder that is created on unzipping our submission. This folder is where the program.txt file is supposed to be. We have created shell scripts to run both the tasks in their respective folders.
+ex.py
 
-To run TASK1:
-In the open terminal, type the following commands:
+These folders contain all the relevant codes our team wrote for fulfilling the requirements of Assignment-2 Part-B. 
+There is one file in this folder, named 'ex.py', which runs a shell script in each of the folders, giving the desired output of each of the tasks. 
 
-cd TASK1
-./run_parser.sh
+Put your file list with relative path in 'ex.py' in the list variable: "textfile". This automates the running process for all programs pertaining to each task.
 
-This should print the required output tokens in the terminal itself. 
-This can be tested for multiple files by just changing the program.txt file and re-running the shell script
-
-To run TASK2:
-
-Exit the Terminal and re-open it in the folder created on unzipping our submission. Here, run the following commands. The program.txt file should be in the same place as it was before, i.e the unzippped folder. 
-
-cd TASK2
-./run_parser.sh
-
-This should print either of valid input or syntax error on the terminal, which indicate the validity of the input program.
-This can be tested for multiple files by just changing the program.txt file and re-running the shell script.
+Run ex.py in a python environment that has the NLTK library installed.
 
 Regards
 Team EB283D80
