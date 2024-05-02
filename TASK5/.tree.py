@@ -57,12 +57,15 @@ keywords = [
 ]
 
 def lookup(name):
+    # input(f"REALLY?{name}")
     for symbol in symbolTable:
         if symbol.name == name:
             return symbol
+    # print(name)
+    # input()
     return None
 
-def evaluate_expression(tree):
+def evaluate_expression(tree, assignment=False):
     label = tree.label()
     if label in keywords:
         if label == 'DECLARATION-STATEMENT':
@@ -88,7 +91,7 @@ def evaluate_expression(tree):
         elif label == 'ASSIGNMENT':
             varname = tree[0].label()
             if varname == 'INDEX-AT':
-                var = lookup(f"{tree[0][0].label()}[{evaluate_expression(tree[0][1])}]")
+                var = lookup(f"{tree[0][0].label()}[{evaluate_expression(tree[0][1],assignment=True)}]")
             else:
                 var = lookup(varname)
 
@@ -98,9 +101,8 @@ def evaluate_expression(tree):
         elif label == 'READ':
             varname = tree[0].label()
             if varname == 'INDEX-AT':
-                var = lookup(f"{tree[0][0].label()}[{evaluate_expression(tree[0][1])}]")
+                var = lookup(f"{tree[0][0].label()}[{evaluate_expression(tree[0][1])}]", assignment=True)
             else:
-                # input(f"{varname}")
                 var = lookup(varname)
             if var.datatype == 'int':
                 var.value = int(input())
@@ -117,6 +119,10 @@ def evaluate_expression(tree):
         elif label == 'ADD':
             return evaluate_expression(tree[0]) + evaluate_expression(tree[1])
         elif label == 'SUBTRACT':
+            # print('before')
+            # print(evaluate_expression(tree[0]))
+            # print('after')
+            # input()
             return evaluate_expression(tree[0]) - evaluate_expression(tree[1])
         elif label == 'MULTIPLY':
             return evaluate_expression(tree[0]) * evaluate_expression(tree[1])
@@ -141,10 +147,15 @@ def evaluate_expression(tree):
             return evaluate_expression(tree[0]) > evaluate_expression(tree[1])
 
         elif label == 'INDEX-AT':
+            # input(tree[0].label())
+            # input(tree[1].label())
             varname = tree[0].label()
+            # print("BEFORE")
             index = int(evaluate_expression(tree[1]))
-            var = lookup(f"varname[{index}]")
-            return var.value[index]
+            # input("hitler?")
+            var = lookup(f"{varname}[{index}]")
+            # print(f"{varname}[{index}]")
+            return var.value
 
         elif label == 'IF':
             if evaluate_expression(tree[0][0]):
@@ -160,8 +171,8 @@ def evaluate_expression(tree):
         elif label == 'FOR':
             varname = tree[0][0].label()
             var = lookup(varname)
-            start = evaluate_expression(tree[0][0][0][0])
-            end = evaluate_expression(tree[0][0][0][1])
+            start = int(evaluate_expression(tree[0][0][0][0]))
+            end = int(evaluate_expression(tree[0][0][0][1]))
             if (tree[0][0][0].label() == 'DOWN-TO'):
                 for i in reversed(list(range(end, start+1))):
                     var.value = i
@@ -179,8 +190,9 @@ def evaluate_expression(tree):
             for child in tree:
                 evaluate_expression(child)
     elif label == "":
-        for child in tree:
-            evaluate_expression(child)
+        # print('inside')
+        # print(tree[0].label())
+        return evaluate_expression(tree[0])
     else:
         if bool(re.search(r'\d', label)):
             if '.' in label:
@@ -189,9 +201,11 @@ def evaluate_expression(tree):
                 return int(label)
         else:
             var = lookup(label)
-            if not var:
+            if var == None:
                 return str(label).replace('~',' ')
             else:
+                # print("THIS?")
+                # input(var.value)
                 return var.value
 
 evaluate_expression(main_tree)

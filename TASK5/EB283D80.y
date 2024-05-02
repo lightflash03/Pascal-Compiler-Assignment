@@ -317,10 +317,10 @@ loop
             printf("[ERROR] wrong type of variable in a for loop \n");
             error = true;
         }
-        if (strcmp($7.sval,"TO") == 0)
-            sprintf($$.syntaxTree, "{FOR{CONDITION{%s{TO{%s}{%s}}}}{STATEMENTS%s}}", $2.syntaxTree, $5.syntaxTree, $7.syntaxTree, $10.syntaxTree);
-        else if (strcmp($7.sval,"DOWNTO") == 0)
+        if (strcmp($7.sval,"DOWNTO") == 0)
             sprintf($$.syntaxTree, "{FOR{CONDITION{%s{DOWN-TO{%s}{%s}}}}{STATEMENTS%s}}", $2.syntaxTree, $5.syntaxTree, $7.syntaxTree, $10.syntaxTree);
+        else
+            sprintf($$.syntaxTree, "{FOR{CONDITION{%s{TO{%s}{%s}}}}{STATEMENTS%s}}", $2.syntaxTree, $5.syntaxTree, $7.syntaxTree, $10.syntaxTree);
     }
     ;
 
