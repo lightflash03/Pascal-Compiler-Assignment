@@ -12,6 +12,7 @@ text = text.replace("(", "ob")    #in the syntax tree, 'ob' will display in plac
 text = text.replace(")", "cb")    #in the syntax tree, 'cb' will display in place of ')'
 text = text.replace("{", "(")
 text = text.replace("}", ")")
+text = text.replace(" ", "~")
 
 main_tree = Tree.fromstring(text)
 
@@ -63,7 +64,6 @@ def lookup(name):
 
 def evaluate_expression(tree):
     label = tree.label()
-    # print(label)
     if label in keywords:
         if label == 'DECLARATION-STATEMENT':
             for child in tree:
@@ -87,7 +87,7 @@ def evaluate_expression(tree):
         elif label == 'READ':
             ...
         elif label == 'WRITE':
-            ...
+            print(evaluate_expression(tree[0]))
 
         elif label == 'ADD':
             return evaluate_expression(tree[0]) + evaluate_expression(tree[1])
@@ -119,16 +119,18 @@ def evaluate_expression(tree):
             for child in tree:
                 evaluate_expression(child)
     else:
+        # input(label)
         if bool(re.search(r'\d', label)):
             if '.' in label:
                 return float(label)
             else:
                 return int(label)
-        var = lookup(label)
-        if not var:
-            return str(label).replace('~',' ')
         else:
-            return var.value
+            var = lookup(label)
+            if not var:
+                return str(label).replace('~',' ')
+            else:
+                return var.value
 
 evaluate_expression(main_tree)
 
@@ -137,9 +139,9 @@ print(f"│    Variable    │    Type    │        Value        │")
 print(f"├────────────────┼────────────┼─────────────────────┤")
 for symbol in symbolTable:
     if symbol.datatype == 'int':
-        print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{symbol.value:^21d}│")
+        print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{symbol.value if symbol.value else 0:^21d}│")
     elif symbol.datatype == 'real':
-        print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{symbol.value:^21f}│")
+        print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{symbol.value if symbol.value else 0.:^21f}│")
     elif symbol.datatype == 'bool':
         print(f"│{symbol.name:^16s}│{symbol.datatype:^12s}│{'true' if symbol.value else 'false':^21s}│")
     elif symbol.datatype == 'char':

@@ -5,9 +5,8 @@ var
   g: boolean;
   f: char;
 begin
-  d := 5;
-  e := 6;
-  c := d + e + 7;
-  g := (3 <= 4);
+  d := 34;
+  WRITE(d + 5);
+  WRITE("Your");
   f := 'r';
 end.
