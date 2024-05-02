@@ -171,11 +171,13 @@ char full_string[150] = "";
 }
 
 "to" {
+    strcpy(yylval.arr_attr.sval,yytext);
     return TO;
 }
 
 "downto" {
-    return DOWNTO;
+    strcpy(yylval.arr_attr.sval,yytext);
+    return TO;
 }
 
 "if" {

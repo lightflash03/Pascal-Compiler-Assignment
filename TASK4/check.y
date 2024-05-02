@@ -99,7 +99,7 @@ char* pop() {
         int second_ival;
         float dval;
         char cval;
-        char *sval;
+        char sval[100];
         bool declared;
         bool assigned;
     };
@@ -109,14 +109,14 @@ char* pop() {
 }
 
 %token <attr> INTEGER_CONST REAL_CONST CHARACTER_CONSTANT IDENTIFIER DATA_TYPE RELATIONAL_OPERATOR UNARY_BOOL_OPERATOR BINARY_BOOL_OPERATOR
-%token <arr_attr> ARRAY_DATA_TYPE
+%token <arr_attr> ARRAY_DATA_TYPE TO
 %token <string_const> STRING_CONSTANT
 
 %type <string_const> output output_list
 
 %type <attr> expression primary_expression arithmetic_expression relational_expression boolean_expression identifier
 
-%token SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO PROGRAM VAR TO DOWNTO IF THEN ELSE WHILE FOR DO TOKEN_BEGIN END READ WRITE PUNCTUATOR
+%token SQUARE_OPEN SQUARE_CLOSE COMMA SEMICOLON FULLSTOP COLON ASSIGN OPEN_BRACE CLOSED_BRACE ADD SUBTRACT MULTIPLY DIVIDE MODULO PROGRAM VAR IF THEN ELSE WHILE FOR DO TOKEN_BEGIN END READ WRITE PUNCTUATOR
 
 %left BINARY_BOOL_OPERATOR
 %left RELATIONAL_OPERATOR
@@ -255,7 +255,7 @@ statement
     }
     | WRITE OPEN_BRACE output CLOSED_BRACE {
         // printf("In write statement\n");
-        printf("%s\n", $3);
+        // printf("%s\n", $3);
     }
     ;
 
@@ -320,7 +320,6 @@ assignment
                                 $1.cval = $3.cval;
                                 break;
                         }
-
                     break;
                 }
             }
@@ -329,14 +328,26 @@ assignment
     ;
 
 conditional
-    : IF expression THEN TOKEN_BEGIN statements END {
+    : IF expression THEN TOKEN_BEGIN {
         printf("if not(%s) goto L%d \n", $2.sval, loop_Variable);
+    } statements {
+        // printf("Inside statements of if\n");
+    } post_if {
+        // printf("Inside postif\n");
         printf("L%d: \n", loop_Variable++);
     }
-    | IF expression THEN TOKEN_BEGIN statements END ELSE TOKEN_BEGIN statements END {
-        // printf("if not(%s) goto L%d \n", $2.sval, loop_Variable);
-        // printf("L%d: \n", loop_Variable++);
+    ;
+
+post_if
+    : END {
     }
+    | END ELSE TOKEN_BEGIN {
+        // printf("Inside Else\n");
+        printf("L%d: \n", loop_Variable++);
+        // printf("Inside else after printing loop variale\n");
+    } statements {
+
+    } END
     ;
 
 loop
@@ -355,117 +366,19 @@ loop
         // Write code to execute the loop statments
         
     }
-    | FOR identifier ASSIGN expression DOWNTO expression DO TOKEN_BEGIN statements END {
-        if (!($4.datatype == 1 && $6.datatype == 1)) {
-            printf("[ERROR] wrong type of expression in a for loop \n");
-            error = true;
-        } else if (!($2.datatype == 1)) {
-            printf("[ERROR] wrong type of variable in a for loop \n");
-            error = true;
+    | FOR identifier ASSIGN expression TO expression DO TOKEN_BEGIN {
+        // printf("In for: %s\n", $5.sval);
+        if (strcmp($5.sval, "to") == 0) {
+            printf("L%d: if not %s < %s goto L%d\n", loop_Variable, $2.sval, $6.sval, loop_Variable+1);
         } else {
-            for (int i=0; i<current_size; i++) {
-                if (strcmp(symbolTable[i].name, $2.sval) == 0) {
-                    symbolTable[i].assigned = true;
-
-                    switch($2.datatype) {
-                            case 1:
-                                if ($2.datatype == $4.datatype) {
-                                    symbolTable[i].val.ival = $4.ival;
-                                    $2.datatype = $4.datatype;
-                                    $2.ival = $4.ival;
-                                }
-                                else if ($2.datatype == 2 && $4.datatype == 1) {
-                                    symbolTable[i].val.dval = (float)$4.ival;
-                                    $2.datatype = 2;
-                                    $2.dval = (int)$4.dval;
-                                }
-                                else {
-                                    symbolTable[i].val.dval = $4.dval;
-                                    $2.datatype = 2;
-                                    $2.dval = (int)$4.dval;
-                                }
-                                break;
-                            case 2:
-                                if ($4.datatype == 1) {
-                                    symbolTable[i].val.dval = (float)$4.ival;
-                                    $2.datatype = 2;
-                                    $2.dval = (int)$4.ival;
-                                } else {
-                                    symbolTable[i].val.dval = $4.dval;
-                                    $2.datatype = 2;
-                                    $2.dval = $4.dval;
-                                }
-                                break;
-                            case 3:
-                                symbolTable[i].val.bval = $4.bval;
-                                $2.bval = $4.bval;
-                                break;
-                            case 4:
-                                symbolTable[i].val.cval = $4.cval;
-                                $2.cval = $4.cval;
-                                break;
-                        }
-
-                    break;
-                }
-            }
+            // printf("Executing else in the for loop\n");
+            printf("L%d: if not %s < %s goto L%d\n", loop_Variable, $2.sval, $6.sval, loop_Variable+1);
         }
-    }
-    | FOR identifier ASSIGN expression TO expression DO TOKEN_BEGIN statements END {
-        if (!($4.datatype == 1 && $6.datatype == 1)) {
-            printf("[ERROR] wrong type of expression in a for loop \n");
-            error = true;
-        } else if (!($2.datatype == 1)) {
-            printf("[ERROR] wrong type of variable in a for loop \n");
-            error = true;
-        } else {
-            for (int i=0; i<current_size; i++) {
-                if (strcmp(symbolTable[i].name, $2.sval) == 0) {
-                    symbolTable[i].assigned = true;
-
-                    switch($2.datatype) {
-                            case 1:
-                                if ($2.datatype == $4.datatype) {
-                                    symbolTable[i].val.ival = $4.ival;
-                                    $2.datatype = $4.datatype;
-                                    $2.ival = $4.ival;
-                                }
-                                else if ($2.datatype == 2 && $4.datatype == 1) {
-                                    symbolTable[i].val.dval = (float)$4.ival;
-                                    $2.datatype = 2;
-                                    $2.dval = (int)$4.dval;
-                                }
-                                else {
-                                    symbolTable[i].val.dval = $4.dval;
-                                    $2.datatype = 2;
-                                    $2.dval = (int)$4.dval;
-                                }
-                                break;
-                            case 2:
-                                if ($4.datatype == 1) {
-                                    symbolTable[i].val.dval = (float)$4.ival;
-                                    $2.datatype = 2;
-                                    $2.dval = (int)$4.ival;
-                                } else {
-                                    symbolTable[i].val.dval = $4.dval;
-                                    $2.datatype = 2;
-                                    $2.dval = $4.dval;
-                                }
-                                break;
-                            case 3:
-                                symbolTable[i].val.bval = $4.bval;
-                                $2.bval = $4.bval;
-                                break;
-                            case 4:
-                                symbolTable[i].val.cval = $4.cval;
-                                $2.cval = $4.cval;
-                                break;
-                        }
-
-                    break;
-                }
-            }
-        }
+    } statements {
+        
+    } END {
+        printf("goto L%d\n", loop_Variable++);
+        printf("L%d:\n", loop_Variable);
     }
     ;
 
@@ -487,6 +400,8 @@ expression: arithmetic_expression {
                     $$.cval = $1.cval;
                     break;
             }
+
+            strcpy($$.sval, $1.sval);
 
           }
           | relational_expression {
@@ -709,8 +624,25 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                      | primary_expression {
                         $$.datatype = $1.datatype;
                         strcpy($$.sval, $1.sval);
+
+                        switch($1.datatype) {
+                            case 1:
+                                $$.ival = $1.ival;
+                                break;
+                            case 2:
+                                $$.dval = $1.dval;
+                                break;
+                            case 3:
+                                $$.bval = $1.bval;
+                                break;
+                            case 4:
+                                $$.cval = $1.cval;
+                                break;
+                        }
+
                         char c[5]; 
-                        strcpy(c, $1.sval); 
+                        strcpy(c, $1.sval);
+                        // printf("Array Value: %s\n", c); 
                         push(c);
                      }
                      ;
@@ -942,7 +874,6 @@ identifier: IDENTIFIER {
                 }
                 
                 strcpy($$.sval, temp);
-                // printf("1[1]: %s %s\n", $$.sval, temp);
 
                  /* Assign Check Data Type */
                 
