@@ -178,13 +178,11 @@ def evaluate_expression(tree):
             else:
                 return var.value
 
-evaluate_expression(main_tree)
-
-# try:
-#     evaluate_expression(main_tree)
-# except:
-#     print("Runtime Error")
-#     exit()
+try:
+    evaluate_expression(main_tree)
+except:
+    print("Runtime Error")
+    exit()
 
 print(f"┌────────────────┬────────────┬─────────────────────┐")
 print(f"│    Variable    │    Type    │        Value        │")
