@@ -60,6 +60,27 @@ int start_array = 0, end_array = 0;
 }
 
 "="|"<"|">"|"<="|">="|"<>" {
+    switch (yytext[0]) {
+        case '=':
+            yylval.attr.sval = "EQUALS";
+            break;
+        case '<':
+            if (yytext[1] == '=') {
+                yylval.attr.sval = "LESS-THAN-OR-EQUAL-TO";
+            } else if (yytext[1] == '>') {
+                yylval.attr.sval = "NOT-EQUALS";
+            } else {
+                yylval.attr.sval = "LESS-THAN";
+            }
+            break;
+        case '>':
+            if (yytext[1] == '=') {
+                yylval.attr.sval = "GREATER-THAN-OR-EQUAL-TO";
+            } else {
+                yylval.attr.sval = "GREATER-THAN";
+            }
+            break;
+    }
     return RELATIONAL_OPERATOR;
 }
 
@@ -68,6 +89,11 @@ int start_array = 0, end_array = 0;
 }
 
 "and"|"or" {
+    if (strcmp(strdup(yytext), "and") == 0) {
+        yylval.attr.sval = "AND";
+    } else if (strcmp(strdup(yytext), "or") == 0) {
+        yylval.attr.sval = "OR";
+    }
     return BINARY_BOOL_OPERATOR;
 }
 
