@@ -7,6 +7,8 @@
 #include <math.h>
 
 bool if_flag = false; 
+bool intoArray = false;
+bool compute = false;
 
 FILE *fptRead = NULL, *fptWrite = NULL;
 extern FILE *yyin;
@@ -65,7 +67,7 @@ void display_Quad() {
     printf ("%s \n", quad[qind-1].operand2);
 }
 
-void push(char *c){
+void push(char *c) {
     strcpy(stk[++tos].c, c);
 }
 
@@ -432,6 +434,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                                     break;
                             }
 
+                            compute = true;
                             char str[5], str1[5]="t"; 
                             sprintf(str,"%d", temp_char++);
                             strcat(str1, str); 
@@ -451,6 +454,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                                     break;
                             }
 
+                            compute = true;
                             char str[5], str1[5]="t"; 
                             sprintf(str,"%d", temp_char++);
                             strcat(str1, str); 
@@ -475,7 +479,8 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                                     $$.dval = $1.dval - $3.dval;
                                     break;
                             }
-
+                            
+                            compute = true;
                             char str[5], str1[5]="t"; 
                             sprintf(str,"%d", temp_char++);
                             strcat(str1, str); 
@@ -494,7 +499,8 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                                     $$.dval = $1.dval - (double)$3.ival;
                                     break;
                             }
-
+                            
+                            compute = true;
                             char str[5], str1[5]="t"; 
                             sprintf(str,"%d", temp_char++);
                             strcat(str1, str); 
@@ -521,6 +527,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                                     break;
                             }
 
+                            compute = true;
                             char str[5], str1[5]="t"; 
                             sprintf(str,"%d", temp_char++);
                             strcat(str1, str); 
@@ -540,6 +547,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                                     break;
                             }
 
+                            compute = true;
                             char str[5], str1[5]="t"; 
                             sprintf(str,"%d", temp_char++);
                             strcat(str1, str); 
@@ -556,7 +564,8 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                         if ($1.datatype == 1 && $3.datatype == 1) {
                             $$.datatype = 2;
                             $$.dval = $1.ival / (double)$3.ival;
-
+                            
+                            compute = true;
                             char str[5], str1[5]="t"; 
                             sprintf(str,"%d", temp_char++);
                             strcat(str1, str); 
@@ -568,6 +577,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                             $$.datatype = 2;
                             $$.dval = $1.dval / $3.dval;
 
+                            compute = true;
                             char str[5], str1[5]="t"; 
                             sprintf(str,"%d", temp_char++);
                             strcat(str1, str); 
@@ -579,6 +589,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                             $$.datatype = 2;
                             $$.dval = (double)$1.ival / $3.dval;
 
+                            compute = true;
                             char str[5], str1[5]="t"; 
                             sprintf(str,"%d", temp_char++);
                             strcat(str1, str); 
@@ -590,6 +601,7 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                             $$.datatype = 2;
                             $$.dval = $1.dval / (double)$3.ival;
 
+                            compute = true;
                             char str[5], str1[5]="t"; 
                             sprintf(str,"%d", temp_char++);
                             strcat(str1, str); 
@@ -606,7 +618,8 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
                         if ($1.datatype == 1 && $3.datatype == 1) {
                             $$.datatype = 1;
                             $$.ival = $1.ival % $3.ival;
-
+                            
+                            compute = true;
                             char str[5], str1[5]="t"; 
                             sprintf(str,"%d", temp_char++);
                             strcat(str1, str); 
@@ -642,8 +655,14 @@ arithmetic_expression: arithmetic_expression ADD arithmetic_expression {
 
                         char c[5]; 
                         strcpy(c, $1.sval);
+
                         // printf("Array Value: %s\n", c); 
+
+                        // printf("intoArray: %d --- to be pushed: %s\n", intoArray, c);
+                        // if(!intoArray && compute)
                         push(c);
+
+                        intoArray = false;
                      }
                      ;
 
@@ -828,6 +847,9 @@ identifier: IDENTIFIER {
                 /* Assign Check Data Type code ends here */
           }
           | IDENTIFIER SQUARE_OPEN expression SQUARE_CLOSE {
+
+                intoArray = true;
+
                 char temp[100];
                 sprintf(temp, "%s[", $1.sval);
                 bool flag = true;
@@ -977,36 +999,36 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    printf("Symbol Table\n");
-    printf("+-----------------------------------------+\n|     Variable     |   Type   |   Value   |\n|-----------------------------------------|\n");
+    // printf("Symbol Table\n");
+    // printf("+-----------------------------------------+\n|     Variable     |   Type   |   Value   |\n|-----------------------------------------|\n");
 
-    for (int i=0; i<current_size; i++) {
-        if (symbolTable[i].datatype == 1) {
-            if (symbolTable[i].assigned)
-                printf("| %16s |   %4s   | %9d |\n", symbolTable[i].name, "int", symbolTable[i].val.ival);
-            else 
-                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "int", "-");
-        }
-        else if (symbolTable[i].datatype == 2) {
-            if (symbolTable[i].assigned)
-                printf("| %16s |   %4s   | %9.4f |\n", symbolTable[i].name, "real", symbolTable[i].val.dval);
-            else 
-                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "real", "-");
-        }
-        else if (symbolTable[i].datatype == 3) {
-            if (symbolTable[i].assigned)
-                printf("| %16s |   %4s   | %9d |\n", symbolTable[i].name, "bool", symbolTable[i].val.ival);
-            else 
-                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "bool", "-");
-        }
-        else if (symbolTable[i].datatype == 4) {
-            if (symbolTable[i].assigned)
-                printf("| %16s |   %4s   | %9s |\n", symbolTable[i].name, "char", symbolTable[i].val.cval);
-            else 
-                printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "char", "-");
-        }
-    };
+    // for (int i=0; i<current_size; i++) {
+    //     if (symbolTable[i].datatype == 1) {
+    //         if (symbolTable[i].assigned)
+    //             printf("| %16s |   %4s   | %9d |\n", symbolTable[i].name, "int", symbolTable[i].val.ival);
+    //         else 
+    //             printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "int", "-");
+    //     }
+    //     else if (symbolTable[i].datatype == 2) {
+    //         if (symbolTable[i].assigned)
+    //             printf("| %16s |   %4s   | %9.4f |\n", symbolTable[i].name, "real", symbolTable[i].val.dval);
+    //         else 
+    //             printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "real", "-");
+    //     }
+    //     else if (symbolTable[i].datatype == 3) {
+    //         if (symbolTable[i].assigned)
+    //             printf("| %16s |   %4s   | %9d |\n", symbolTable[i].name, "bool", symbolTable[i].val.ival);
+    //         else 
+    //             printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "bool", "-");
+    //     }
+    //     else if (symbolTable[i].datatype == 4) {
+    //         if (symbolTable[i].assigned)
+    //             printf("| %16s |   %4s   | %9s |\n", symbolTable[i].name, "char", symbolTable[i].val.cval);
+    //         else 
+    //             printf("| %16s |   %4s   |     %1s     |\n", symbolTable[i].name, "char", "-");
+    //     }
+    // };
 
-    printf("+-----------------------------------------+\n");
+    // printf("+-----------------------------------------+\n");
 
 }
