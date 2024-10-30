@@ -9,16 +9,18 @@ Team Members:
 
 Structure of Submission:
 
-We have, in our submission, 3 folders: 
-1. TASK3
-2. TASK4
-3. TASK5
+We have, in our submission, 5 folders: 
+1. TASK1
+2. TASK2
+3. TASK3
+4. TASK4
+5. TASK5
 
 And one file: 
 
 ex.py
 
-These folders contain all the relevant codes our team wrote for fulfilling the requirements of Assignment-2 Part-B. 
+These folders contain all the relevant codes our team wrote for fulfilling the requirements of Assignment-2. 
 There is one file in this folder, named 'ex.py', which runs a shell script in each of the folders, giving the desired output of each of the tasks. 
 
 Put your file list with relative path in 'ex.py' in the list variable: "textfile". This automates the running process for all programs pertaining to each task.
